@@ -48,7 +48,7 @@ func SetupDb(DbMap *DbMap) error {
 		DBName: "employee_management",
 	}
 
-	var err error = nil
+	var err error
 	DbMap.Db, err = sql.Open("mysql", cfg.FormatDSN())
 	if err != nil {
 		return err
@@ -69,8 +69,8 @@ func (DbMap *DbMap) GetEmployeesByDepartment(department string) (employees []*Em
 	rows, err := DbMap.Db.Query(`
 	SELECT id, first_name, last_name, email, department_id
 	FROM employee_department
-	WHERE department = ?
-	INNER JOIN employee ON id = employee.department_id`, department)
+	INNER JOIN employee ON id = employee.department_id
+	WHERE department = ?`, department)
 
 	if err != nil {
 		rows.Close()
