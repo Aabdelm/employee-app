@@ -2,9 +2,10 @@ package employeedb
 
 import (
 	"database/sql"
-	"github.com/go-sql-driver/mysql"
 	"log"
 	"os"
+
+	"github.com/go-sql-driver/mysql"
 )
 
 type DbMap struct {
@@ -14,11 +15,12 @@ type DbMap struct {
 }
 
 type Employee struct {
-	Id         int    `json:"id"`
-	FirstName  string `json:"firstName"`
-	LastName   string `json:"lastName"`
-	Email      string `json:"email"`
-	Department *EmployeeDepartment
+	Id           int    `json:"id"`
+	FirstName    string `json:"firstName"`
+	LastName     string `json:"lastName"`
+	Email        string `json:"email"`
+	Department   string `json:"employeeId"`
+	DepartmentId int    `json:"employeeDepartment"`
 }
 
 type EmployeeDepartment struct {
