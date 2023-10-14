@@ -28,7 +28,7 @@ func (DbMap *DbMap) GetEmployeesByDepartment(department string) (employees []*Em
 	//iterate and append
 	for rows.Next() {
 		employee := NewEmployee()
-		if err := rows.Scan(employee.Id, employee.FirstName, employee.LastName, employee.Email, employee.Department.Id); err != nil {
+		if err := rows.Scan(employee.Id, employee.FirstName, employee.LastName, employee.Email, employee.DepartmentId); err != nil {
 			rows.Close()
 			return nil, err
 		}
@@ -71,8 +71,8 @@ func (DbMap *DbMap) RemoveDepartment(department string) error {
 
 func (DbMap *DbMap) UpdateDepartment(id int, newName string) error {
 	_, err := DbMap.Db.Exec(`UPDATE employee_department
-	SET department = ?
-	WHERE department_id = ?`, newName, id)
+	SET department = ?, date_modified = ?
+	WHERE department_id = ?`, newName, time.Now(), id)
 	if err != nil {
 		DbMap.l.Printf("[ERROR] failed to delete, error:%s\n", err)
 	}
