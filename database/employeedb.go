@@ -98,29 +98,36 @@ func (DbMap *DbMap) GetEmployeesByDepartment(department string) (employees []*Em
 
 /*
 AddNewDepartment adds a new department
+The method returns an error that will help us later with error codes
 */
-func (DbMap *DbMap) AddNewDepartment(department string) {
+func (DbMap *DbMap) AddNewDepartment(department string) error {
 	id, err := DbMap.Db.Exec(`INSERT INTO employee_department (department, date_added, date_modified)
 	VALUES (?,?,?)`, department, time.Now(), time.Now())
 	if err != nil {
-		DbMap.l.Fatalf("ERROR: Failed to execute query. Error:%s", err)
+		DbMap.l.Printf("[ERROR] Failed to execute query. Error:%s\n", err)
 	}
-	DbMap.l.Printf("Successfully added id %d\n", id)
+	DbMap.l.Printf("[INFO] Successfully added id %d\n", id)
+
+	return nil
 
 }
 
 /*
- */
-func (DbMap *DbMap) RemoveDepartment(department string) {
+RemoveDepartment removes a department
+The method returns an error for HTTP error codes
+*/
+func (DbMap *DbMap) RemoveDepartment(department string) error {
 	id, err := DbMap.Db.Exec(`DELETE FROM employee_department
 	WHERE department = ?)`, department)
 	if err != nil {
-		DbMap.l.Fatalf("FATAL: failed to delete, error:%s", err)
+		DbMap.l.Printf("[ERROR] failed to delete, error:%s\n", err)
 	}
 	i, err := id.LastInsertId()
 	if err != nil {
-		DbMap.l.Fatalf("FATAL: failed to retrieve id %d, error:%s", i, err)
+		DbMap.l.Printf("[ERROR] failed to retrieve id %d, error:%s\n", i, err)
 	}
 
-	DbMap.l.Printf("Database: Successfully removed %d", i)
+	DbMap.l.Printf("Database: Successfully removed %d\n", i)
+
+	return nil
 }
