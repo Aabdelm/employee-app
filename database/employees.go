@@ -3,19 +3,28 @@ package employeedb
 import "time"
 
 func (DbMap *DbMap) GetEmployeeById(id int) (*Employee, error) {
-	row, err := DbMap.Db.Query(`
+	var err error
+	statement, err := DbMap.Db.Prepare(`
 	SELECT id, first_name, last_name, email, department_id
 	FROM employee_department
 	INNER JOIN employee ON id = employee.department_id
-	WHERE department_id = ?`, id)
+	WHERE department_id = ?`)
 
-	employee := NewEmployee()
+	if statement != nil {
+		DbMap.l.Printf("[ERROR] Failed to prepare statement on function GetEmployeeById. error: %s", err)
+		return nil, err
+	}
+
+	defer statement.Close()
+	row := statement.QueryRow(id)
 
 	if err != nil {
-		row.Close()
+
 		DbMap.l.Printf("[ERROR] Query failed. error:%s\n", err)
 		return nil, err
 	}
+
+	employee := NewEmployee()
 
 	if err := row.Scan(employee.Id, employee.FirstName, employee.LastName, employee.Email, employee.Department); err != nil {
 		DbMap.l.Printf("[ERROR] Qailed to scan row. error:%s\n", err)
@@ -33,11 +42,22 @@ UpdateEmployeeDepartment updates the employee department
 It utilizes an employee pointer for later json parsing
 */
 func (DbMap *DbMap) UpdateEmployeeDepartment(Employee *Employee, departmentId int) error {
+	var err error
+
 	oldId := Employee.DepartmentId
-	_, err := DbMap.Db.Exec(`UPDATE employee 
-	SET department_id = ?`, departmentId)
+	statement, err := DbMap.Db.Prepare(`UPDATE employee 
+	SET department_id = ?`)
 	if err != nil {
-		DbMap.l.Printf("[ERROR] Failed to update id %d. Error: %s\n", departmentId, err)
+		DbMap.l.Printf("[ERROR] Failed to prepare statement on function UpdateEmployeeDepartment %d. Error: %s\n", departmentId, err)
+		return err
+	}
+
+	defer statement.Close()
+
+	_, err = statement.Exec(departmentId)
+
+	if err != nil {
+		DbMap.l.Printf("[ERROR] Failed to execute statement on function UpdateEmployeeDepartment. Error: %s\n", err)
 		return err
 	}
 
@@ -51,11 +71,23 @@ UpdateEmployeeDepartment updates the employee's first name
 It utilizes an employee pointer for later json parsing
 */
 func (DbMap *DbMap) UpdateEmployeeFirstName(Employee *Employee, newFirstName string, departmentId int) error {
+	var err error
+
 	oldName := Employee.FirstName
-	_, err := DbMap.Db.Exec(`UPDATE employee 
-	SET first_name = ?`, newFirstName)
+
+	statement, err := DbMap.Db.Prepare(`UPDATE employee 
+	SET first_name = ?`)
 	if err != nil {
-		DbMap.l.Printf("[ERROR] Failed to update first name %s. Error: %s\n", oldName, err)
+		DbMap.l.Printf("[ERROR] Failed to prepare statement on function UpdateEmployeeFirstName. Error: %s\n", err)
+		return err
+	}
+
+	defer statement.Close()
+
+	_, err = statement.Exec(newFirstName)
+
+	if err != nil {
+		DbMap.l.Printf("[ERROR] Failed to execute statement on function UpdateEmployeeFirstName. Error %s\n", err)
 		return err
 	}
 
@@ -69,9 +101,19 @@ UpdateEmployeeDepartment updates the employee's last name
 It utilizes an employee pointer for later json parsing
 */
 func (DbMap *DbMap) UpdateEmployeeLastName(Employee *Employee, newLastName string, departmentId int) error {
+	var err error
+
 	oldName := Employee.LastName
-	_, err := DbMap.Db.Exec(`UPDATE employee 
-	SET last_name = ?, date_modified = ?`, newLastName, time.Now())
+	statement, err := DbMap.Db.Prepare(`UPDATE employee 
+	SET last_name = ?, date_modified = ?`)
+	if err != nil {
+		DbMap.l.Printf("[ERROR] Failed to prepare statement on function UpdateEmployeeLastName. Error: %s\n", err)
+	}
+
+	defer statement.Close()
+
+	_, err = statement.Exec(newLastName, time.Now())
+
 	if err != nil {
 		DbMap.l.Printf("[ERROR] Failed to update last name %s. Error: %s\n", oldName, err)
 		return err
@@ -87,9 +129,17 @@ UpdateEmployeeDepartment updates the employee's email
 It utilizes an employee pointer for later json parsing
 */
 func (DbMap *DbMap) UpdateEmployeeEmail(Employee *Employee, newEmail string, departmentId int) error {
+	var err error
+
 	oldEmail := Employee.Email
-	_, err := DbMap.Db.Exec(`UPDATE employee 
-	SET email = ?, date_modified = ?`, newEmail, time.Now())
+	statement, err := DbMap.Db.Prepare(`UPDATE employee 
+	SET email = ?, date_modified = ?`)
+
+	if err != nil {
+		DbMap.l.Printf("[ERROR] Failed to prepare statement on function UpdateEmployeeEmail. Error: %s\n", err)
+	}
+
+	_, err = statement.Exec(newEmail, time.Now())
 	if err != nil {
 		DbMap.l.Printf("[ERROR] Failed to update email %s. Error: %s\n", oldEmail, err)
 		return err
@@ -104,10 +154,18 @@ func (DbMap *DbMap) UpdateEmployeeEmail(Employee *Employee, newEmail string, dep
 
 //delete employee removes the employee off the database
 func (DbMap *DbMap) DeleteEmployee(id int) error {
-	_, err := DbMap.Db.Exec(`DELETE FROM employee
-	WHERE id = ?`, id)
+	statement, err := DbMap.Db.Prepare(`DELETE FROM employee
+	WHERE id = ?`)
 	if err != nil {
 		DbMap.l.Printf("[ERROR] Failed to execute query for id %d. Error: %s\n", id, err)
+		return err
+	}
+
+	defer statement.Close()
+
+	_, err = statement.Exec(id)
+	if err != nil {
+		DbMap.l.Printf("[ERROR] Failed to execute statement on function DeleteEmployee. Error %s\n", err)
 		return err
 	}
 

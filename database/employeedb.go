@@ -10,7 +10,7 @@ import (
 
 type DbMap struct {
 	l  *log.Logger    // for logging
-	M  map[int]string // for storing key-pair vals of departments
+	M  map[string]int // for storing key-pair vals of departments
 	Db *sql.DB        //the database
 }
 
@@ -29,11 +29,15 @@ type EmployeeDepartment struct {
 }
 
 func NewDbMap(l *log.Logger) *DbMap {
-	return &DbMap{l: l, M: make(map[int]string)}
+	return &DbMap{l: l, M: make(map[string]int, 0)}
 }
 
 func NewEmployee() *Employee {
 	return &Employee{}
+}
+
+func NewEmployeeDepartment() *EmployeeDepartment {
+	return &EmployeeDepartment{}
 }
 
 /*
