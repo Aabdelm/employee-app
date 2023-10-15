@@ -1,16 +1,19 @@
 package employeedb
 
-import "time"
+import (
+	"time"
+)
 
 func (DbMap *DbMap) GetEmployeeById(id int) (*Employee, error) {
 	var err error
 	statement, err := DbMap.Db.Prepare(`
-	SELECT id, first_name, last_name, email, department_id
+	SELECT id, first_name, last_name, email, department,
+	employee_department.department_id
 	FROM employee_department
-	INNER JOIN employee ON id = employee.department_id
-	WHERE department_id = ?`)
+	INNER JOIN employee ON employee_department.department_id = employee.department_id
+	WHERE id= ?`)
 
-	if statement != nil {
+	if err != nil {
 		DbMap.l.Printf("[ERROR] Failed to prepare statement on function GetEmployeeById. error: %s", err)
 		return nil, err
 	}
@@ -19,15 +22,15 @@ func (DbMap *DbMap) GetEmployeeById(id int) (*Employee, error) {
 	row := statement.QueryRow(id)
 
 	if err != nil {
-
 		DbMap.l.Printf("[ERROR] Query failed. error:%s\n", err)
 		return nil, err
 	}
 
 	employee := NewEmployee()
+	err = row.Scan(&employee.Id, &employee.FirstName, &employee.LastName, &employee.Email, &employee.Department, &employee.DepartmentId)
 
-	if err := row.Scan(employee.Id, employee.FirstName, employee.LastName, employee.Email, employee.Department); err != nil {
-		DbMap.l.Printf("[ERROR] Qailed to scan row. error:%s\n", err)
+	if err != nil {
+		DbMap.l.Printf("[ERROR] Failed to scan row. error:%s\n", err)
 		return nil, err
 	}
 
@@ -152,7 +155,7 @@ func (DbMap *DbMap) UpdateEmployeeEmail(Employee *Employee, newEmail string, dep
 
 //
 
-//delete employee removes the employee off the database
+// delete employee removes the employee off the database
 func (DbMap *DbMap) DeleteEmployee(id int) error {
 	statement, err := DbMap.Db.Prepare(`DELETE FROM employee
 	WHERE id = ?`)
@@ -170,5 +173,29 @@ func (DbMap *DbMap) DeleteEmployee(id int) error {
 	}
 
 	DbMap.l.Printf("[INFO] Successfully deleted %d\n", id)
+	return nil
+}
+
+func (DbMap *DbMap) AddNewEmployee(employee *Employee) error {
+	var err error
+
+	statement, err := DbMap.Db.Prepare(`INSERT INTO employee
+	 (id,first_name, last_name, email, department_id, date_added, date_modified) 
+	 VALUES (?,?,?,?,?,?,?)`)
+	if err != nil {
+		DbMap.l.Printf("[ERROR] Failed to prepare statement on funcion AddNewEmployee. Error %s\n", err)
+		return err
+
+	}
+	_, err = statement.Exec(employee.Id, employee.FirstName, employee.LastName, employee.Email,
+		employee.DepartmentId, time.Now(), time.Now())
+
+	if err != nil {
+		DbMap.l.Printf("[ERROR] Failed to execute statement. Error %s\n", err)
+		return err
+	}
+
+	DbMap.l.Printf("[INFO] Added employee to database \n")
+
 	return nil
 }
