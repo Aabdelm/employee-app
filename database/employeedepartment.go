@@ -53,16 +53,18 @@ func (DbMap *DbMap) GetEmployeesByDepartment(department string) (employees []*Em
 AddNewDepartment adds a new department
 The method returns an error that will help us later with error codes
 */
-func (DbMap *DbMap) AddNewDepartment(department string) (*EmployeeDepartment, error) {
-	dept := NewEmployeeDepartment()
-	statement, err := DbMap.Db.Prepare(`INSERT INTO employee_department (department, date_added, date_modified)
-	VALUES (?,?,?)`)
+func (DbMap *DbMap) AddNewDepartment(dept *EmployeeDepartment) error {
+
+	statement, err := DbMap.Db.Prepare(`INSERT INTO employee_department 
+	(department_id, department, date_added, date_modified)
+	VALUES (?,?,?,?)`)
 	if err != nil {
 		DbMap.l.Printf("[ERROR] Failed to prepare query. Error %s", err)
+		return err
 	}
 	defer statement.Close()
 
-	row, err := statement.Exec(department, time.Now(), time.Now())
+	row, err := statement.Exec(dept.Id, dept.Department, time.Now(), time.Now())
 
 	if err != nil {
 		DbMap.l.Printf("[ERROR] Failed to execute query for AddNewDepartment. Error:%s\n", err)
@@ -76,11 +78,10 @@ func (DbMap *DbMap) AddNewDepartment(department string) (*EmployeeDepartment, er
 	DbMap.l.Printf("[INFO] Successfully added id %d\n", lastId)
 
 	dept.Id = int(lastId)
-	dept.Department = department
 
-	DbMap.M[department] = int(lastId)
+	DbMap.M[dept.Department] = int(lastId)
 
-	return dept, nil
+	return nil
 
 }
 
