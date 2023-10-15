@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -23,15 +22,62 @@ func NewEmployeHandler(l *log.Logger, DbMap *employeedb.DbMap) EmployeeHandler {
 	}
 }
 
-func (employeeHandler EmployeeHandler) GetEmployee(rw http.ResponseWriter, r *http.Request) {
-	s := chi.URLParam(r, "id")
-	i, _ := strconv.Atoi(s)
-	fmt.Fprintf(rw, "Hello there, employee %d", i)
+func (eh EmployeeHandler) GetEmployee(rw http.ResponseWriter, r *http.Request) {
+	var err error
+	idString := chi.URLParam(r, "id")
+
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		eh.l.Printf("[ERROR] Failed to get parameter. Error: %s", err)
+		return
+	}
+
+	eh.l.Println("Got id", id)
+
+	employee, err := eh.DbMap.GetEmployeeById(id)
+	if err != nil {
+		eh.l.Printf("[ERROR] Failed to Get employee %d. Error: %s", id, err)
+		return
+	}
+	if employee == nil {
+		eh.l.Printf("[ERROR] Failed to Get employee %d. Employee is null", id)
+		return
+	}
+
+	rw.Header().Set("Content-type", "application/json")
+	enc := json.NewEncoder(rw)
+
+	err = enc.Encode(employee)
+	if err != nil {
+		eh.l.Printf("[ERROR] Failed to get JSON for employee %d. Error: %s", id, err)
+		return
+	}
+
 }
 
-func (employeeHandler EmployeeHandler) AddEmployee(rw http.ResponseWriter, r *http.Request) {
+func (eh EmployeeHandler) PostEmployee(rw http.ResponseWriter, r *http.Request) {
+	var err error
 	employee := employeedb.NewEmployee()
+
+	routeString := chi.URLParam(r, "id")
+
+	id, err := strconv.Atoi(routeString)
+	if err != nil {
+		eh.l.Printf("[ERROR] failed to parse integer from string. error: %s", err)
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	employee.Id = id
+
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(employee)
-	employeeHandler.DbMap.AddNewEmployee(employee)
+
+	eh.l.Printf("[INFO] got dept id %d", employee.DepartmentId)
+
+	err = eh.DbMap.AddNewEmployee(employee)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+	}
+
 }
