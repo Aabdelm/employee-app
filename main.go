@@ -41,7 +41,7 @@ func main() {
 	deptHandler := handlers.NewDepartmentHandler(l, db)
 
 	router.Get("/employees/{id}", employeeHandler.GetEmployee)
-	router.Post("/employees/{id}", employeeHandler.AddEmployee)
+	router.Post("/employees/{id}", employeeHandler.PostEmployee)
 
 	router.Post("/departments/{id}", deptHandler.PostDepartment)
 
