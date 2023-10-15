@@ -29,6 +29,7 @@ func (eh EmployeeHandler) GetEmployee(rw http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(idString)
 	if err != nil {
 		eh.l.Printf("[ERROR] Failed to get parameter. Error: %s", err)
+		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -37,10 +38,12 @@ func (eh EmployeeHandler) GetEmployee(rw http.ResponseWriter, r *http.Request) {
 	employee, err := eh.DbMap.GetEmployeeById(id)
 	if err != nil {
 		eh.l.Printf("[ERROR] Failed to Get employee %d. Error: %s", id, err)
+		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if employee == nil {
 		eh.l.Printf("[ERROR] Failed to Get employee %d. Employee is null", id)
+		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -78,6 +81,7 @@ func (eh EmployeeHandler) PostEmployee(rw http.ResponseWriter, r *http.Request) 
 	err = eh.DbMap.AddNewEmployee(employee)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 }
