@@ -19,13 +19,13 @@ type Employee struct {
 	FirstName    string `json:"firstName"`
 	LastName     string `json:"lastName"`
 	Email        string `json:"email"`
-	Department   string `json:"employeeId"`
-	DepartmentId int    `json:"employeeDepartment"`
+	Department   string `json:"department"`
+	DepartmentId int    `json:"departmentId"`
 }
 
 type EmployeeDepartment struct {
-	Id         int    `json:"employeeId"`
-	Department string `json:"employeeDepartment"`
+	Id         int    `json:"departmentId"`
+	Department string `json:"department"`
 }
 
 func NewDbMap(l *log.Logger) *DbMap {
