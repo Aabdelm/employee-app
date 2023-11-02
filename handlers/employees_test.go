@@ -1,8 +1,11 @@
 package handlers_test
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -49,6 +52,7 @@ func (mock mockDb) DeleteEmployee(id int) error {
 }
 func (mock mockDb) AddNewEmployee(emp *employeedb.Employee) error {
 	_, ok := mock[emp.Id]
+	fmt.Println("First 1:", emp.FirstName)
 	if ok {
 		return errors.New("Error: ID already present")
 	}
@@ -118,7 +122,7 @@ func Test404Get(t *testing.T) {
 	}
 }
 
-func TestNullEmployee(t *testing.T) {
+func TestGetNullEmployee(t *testing.T) {
 	testDb := make(mockDb)
 	testDb[1] = nil
 	eh := &handlers.EmployeeHandler{
@@ -141,4 +145,118 @@ func TestNullEmployee(t *testing.T) {
 	if result.StatusCode != http.StatusBadRequest {
 		t.Fatalf("Expected %d, got %d", http.StatusNotFound, result.StatusCode)
 	}
+}
+
+func TestPostEmployee(t *testing.T) {
+	testDb := make(mockDb)
+
+	l := log.Default()
+
+	rr := httptest.NewRecorder()
+
+	eh := &handlers.EmployeeHandler{
+		L:     l,
+		DbMap: testDb,
+	}
+
+	testEmp := employeedb.Employee{
+		Id:           1,
+		FirstName:    "First",
+		LastName:     "Last",
+		Email:        "email@yes.xyz",
+		Department:   "Engineering",
+		DepartmentId: 1,
+	}
+
+	j, _ := json.Marshal(testEmp)
+
+	reader := bytes.NewReader(j)
+
+	req := httptest.NewRequest("POST", "/employees/", reader)
+	req.Header.Set("Content-type", "application/json")
+	reqCtx := chi.NewRouteContext()
+	reqCtx.URLParams.Add("id", "1")
+
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, reqCtx))
+
+	eh.PostEmployee(rr, req)
+
+	result := rr.Result()
+
+	if result.StatusCode != http.StatusOK {
+		t.Fatalf("Expectd %d, got %d", http.StatusOK, result.StatusCode)
+	}
+
+}
+
+func TestPostDuplicateEmployee(t *testing.T) {
+	testDb := make(mockDb)
+	l := log.Default()
+
+	rr := httptest.NewRecorder()
+
+	eh := &handlers.EmployeeHandler{
+		L:     l,
+		DbMap: testDb,
+	}
+	testDb[1] = &employeedb.Employee{}
+
+	testEmp := employeedb.Employee{
+		Id:           1,
+		FirstName:    "First",
+		LastName:     "Last",
+		Email:        "email@yes.xyz",
+		Department:   "Engineering",
+		DepartmentId: 1,
+	}
+
+	j, _ := json.Marshal(testEmp)
+
+	reader := bytes.NewReader(j)
+
+	req := httptest.NewRequest("POST", "/employees/", reader)
+	req.Header.Set("Content-type", "application/json")
+	reqCtx := chi.NewRouteContext()
+	reqCtx.URLParams.Add("id", "1")
+
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, reqCtx))
+
+	eh.PostEmployee(rr, req)
+
+	result := rr.Result()
+
+	if result.StatusCode != http.StatusBadRequest {
+		t.Fatalf("Expectd %d, got %d", http.StatusBadRequest, result.StatusCode)
+	}
+
+}
+
+//Not yet implemented
+
+func TestPutEmployee(t *testing.T) {
+	testDb := make(mockDb)
+
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest("PUT", "/employees/", nil)
+
+	reqCtx := chi.NewRouteContext()
+	reqCtx.URLParams.Add("id", "1")
+
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, reqCtx))
+
+	l := log.Default()
+
+	eh := &handlers.EmployeeHandler{
+		L:     l,
+		DbMap: testDb,
+	}
+
+	eh.PutEmployee(rr, req)
+
+	result := rr.Result()
+
+	if result.StatusCode != http.StatusOK {
+		t.Fatalf("Expected %v, got %v", http.StatusOK, result.StatusCode)
+	}
+
 }
