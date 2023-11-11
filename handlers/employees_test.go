@@ -236,8 +236,23 @@ func TestPostDuplicateEmployee(t *testing.T) {
 func TestPutEmployee(t *testing.T) {
 	testDb := make(mockDb)
 
+	testDb[1] = &employeedb.Employee{}
+
+	emp := employeedb.Employee{
+		Id:           1,
+		FirstName:    "First",
+		LastName:     "Last",
+		Email:        "email@yes.xyz",
+		Department:   "Engineering",
+		DepartmentId: 1,
+	}
+
+	j, _ := json.Marshal(emp)
+
+	reader := bytes.NewReader(j)
+
 	rr := httptest.NewRecorder()
-	req := httptest.NewRequest("PUT", "/employees/", nil)
+	req := httptest.NewRequest("PUT", "/employees/", reader)
 
 	reqCtx := chi.NewRouteContext()
 	reqCtx.URLParams.Add("id", "1")
