@@ -23,7 +23,7 @@ type DeptMapper interface {
 	GetEmployeesByDepartment(id int) ([]*Employee, error)
 	AddNewDepartment(dept *EmployeeDepartment) error
 	RemoveDepartment(id int) error
-	UpdateDepartment(id int, departmnet *EmployeeDepartment, newName string) error
+	UpdateDepartment(id int, department *EmployeeDepartment, newName string) error
 }
 type DbMap struct {
 	l  *log.Logger    // for logging
