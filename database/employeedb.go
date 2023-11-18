@@ -8,6 +8,23 @@ import (
 	"github.com/go-sql-driver/mysql"
 )
 
+const (
+	disableforeignkey = 0
+	enableforeignkey  = 1
+)
+
+type EmployeeMapper interface {
+	GetEmployeeById(id int) (*Employee, error)
+	UpdateEmployee(*Employee) error
+	DeleteEmployee(id int) error
+	AddNewEmployee(*Employee) error
+}
+type DeptMapper interface {
+	GetEmployeesByDepartment(id int) ([]*Employee, error)
+	AddNewDepartment(dept *EmployeeDepartment) error
+	RemoveDepartment(id int) error
+	UpdateDepartment(id int, departmnet *EmployeeDepartment, newName string) error
+}
 type DbMap struct {
 	l  *log.Logger    // for logging
 	M  map[string]int // for storing key-pair vals of departments
@@ -62,4 +79,49 @@ func SetupDb(DbMap *DbMap) error {
 
 	DbMap.l.Println("Connected Database")
 	return err
+}
+
+/*
+Foreign key checks for when we need to modify a table with a relationship
+*/
+func (DbMap *DbMap) disableForeignKeyChecks() error {
+	var err error
+
+	stmt, err := DbMap.Db.Prepare("SET foreign_key_checks = ?")
+	if err != nil {
+		DbMap.l.Println("Failed to prepare statement for disabling foreign key checks")
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(disableforeignkey)
+
+	if err != nil {
+		DbMap.l.Println("Failed to execute statement for disabling foreign key checks")
+		return err
+	}
+
+	return nil
+
+}
+
+func (DbMap *DbMap) enableForeignKeyChecks() error {
+	var err error
+
+	stmt, err := DbMap.Db.Prepare("SET foreign_key_checks = ?")
+	if err != nil {
+		DbMap.l.Println("Failed to prepare statement for enabling foreign key checks")
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(disableforeignkey)
+
+	if err != nil {
+		DbMap.l.Println("Failed to execute statement for enabling foreign key checks")
+		return err
+	}
+
+	return nil
+
 }
