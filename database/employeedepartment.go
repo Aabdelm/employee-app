@@ -8,20 +8,20 @@ import (
 GetQuery gets the row(s) for employee(s) using the arguments provided
 it returns a nil error if no error was found
 */
-func (DbMap *DbMap) GetEmployeesByDepartment(department string) (employees []*Employee, err error) {
+func (DbMap *DbMap) GetEmployeesByDepartment(deptId int) (employees []*Employee, err error) {
 	//Query rows
 	statement, err := DbMap.Db.Prepare(`
 	SELECT id, first_name, last_name, email, department_id
 	FROM employee_department
 	INNER JOIN employee ON id = employee.department_id
-	WHERE department = ?`)
+	WHERE employee_department.department_id = ?`)
 
 	if err != nil {
 		DbMap.l.Printf("[ERROR] Failed to execute statement. error: %s", err)
 	}
 	defer statement.Close()
 
-	rows, err := statement.Query(department)
+	rows, err := statement.Query(deptId)
 
 	if err != nil {
 		DbMap.l.Printf("[ERROR] Failed to Query for function GetEmployeesByDepartment. error: %s", err)
@@ -38,7 +38,7 @@ func (DbMap *DbMap) GetEmployeesByDepartment(department string) (employees []*Em
 	//iterate and append
 	for rows.Next() {
 		employee := NewEmployee()
-		if err := rows.Scan(employee.Id, employee.FirstName, employee.LastName, employee.Email, employee.DepartmentId); err != nil {
+		if err := rows.Scan(&employee.Id, &employee.FirstName, &employee.LastName, &employee.Email, &employee.DepartmentId); err != nil {
 			return nil, err
 		}
 		employees = append(employees, employee)
@@ -89,7 +89,7 @@ func (DbMap *DbMap) AddNewDepartment(dept *EmployeeDepartment) error {
 RemoveDepartment removes a department
 The method returns an error for HTTP error codes
 */
-func (DbMap *DbMap) RemoveDepartment(department string) error {
+func (DbMap *DbMap) RemoveDepartment(deptId int) error {
 	var err error
 
 	statement, err := DbMap.Db.Prepare(`DELETE FROM employee_department
@@ -100,14 +100,12 @@ func (DbMap *DbMap) RemoveDepartment(department string) error {
 	}
 	defer statement.Close()
 
-	_, err = statement.Exec(department)
+	_, err = statement.Exec(deptId)
 
 	if err != nil {
 		DbMap.l.Printf("[ERROR] Failed to execute delete statement for function RemoveDepartment. error:%s\n", err)
 		return err
 	}
-
-	delete(DbMap.M, department)
 
 	return nil
 }
