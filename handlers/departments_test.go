@@ -87,7 +87,7 @@ func TestAddNewDepartment(t *testing.T) {
 	defer body.Body.Close()
 
 	if body.StatusCode != http.StatusOK {
-		t.Fatalf("Expected %d, got %d", http.StatusAccepted, body.StatusCode)
+		t.Fatalf("Expected %d, got %d", http.StatusOK, body.StatusCode)
 
 	}
 
@@ -120,13 +120,18 @@ func TestUpdateDepartment(t *testing.T) {
 	req := httptest.NewRequest("PUT", "/departments/", bytes)
 	rr := httptest.NewRecorder()
 
-	dh.PostDepartment(rr, req)
+	routeCtx := chi.NewRouteContext()
+	routeCtx.URLParams.Add("id", "1")
+
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, routeCtx))
+
+	dh.PutDepartment(rr, req)
 
 	body := rr.Result()
 	defer body.Body.Close()
 
 	if body.StatusCode != http.StatusOK {
-		t.Fatalf("Expected %d, got %d", http.StatusAccepted, body.StatusCode)
+		t.Fatalf("Expected %d, got %d", http.StatusOK, body.StatusCode)
 
 	}
 }
@@ -176,14 +181,14 @@ func TestGetEmployeesByDepartment(t *testing.T) {
 
 	result := rr.Result()
 
-	if result.StatusCode != http.StatusAccepted {
-		t.Fatalf("Expected %d, got %d", http.StatusAccepted, result.StatusCode)
+	if result.StatusCode != http.StatusOK {
+		t.Fatalf("Expected %d, got %d", http.StatusOK, result.StatusCode)
 	}
 
 }
 
 func TestDeleteDepartments(t *testing.T) {
-	req := httptest.NewRequest("GET", "/employees/{id}", nil)
+	req := httptest.NewRequest("DELETE", "/employees/{id}", nil)
 	rr := httptest.NewRecorder()
 
 	reqCtx := chi.NewRouteContext()
@@ -223,7 +228,7 @@ func TestDeleteDepartments(t *testing.T) {
 		DbMap: md,
 	}
 
-	dh.PutDepartment(rr, req)
+	dh.DeleteDepartment(rr, req)
 
 	result := rr.Result()
 
