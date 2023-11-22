@@ -15,7 +15,7 @@ type EmployeeHandler struct {
 	DbMap employeedb.EmployeeMapper
 }
 
-func NewEmployeeHandler(l *log.Logger, DbMap *employeedb.DbMap) EmployeeHandler {
+func NewEmployeeHandler(l *log.Logger, DbMap employeedb.EmployeeMapper) EmployeeHandler {
 
 	return EmployeeHandler{
 		L:     l,
@@ -63,21 +63,10 @@ func (eh EmployeeHandler) PostEmployee(rw http.ResponseWriter, r *http.Request) 
 	var err error
 	employee := employeedb.NewEmployee()
 
-	routeString := chi.URLParam(r, "id")
-
-	id, err := strconv.Atoi(routeString)
-	if err != nil {
-		eh.L.Printf("[ERROR] failed to parse integer from string. error: %s", err)
-		rw.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	employee.Id = id
-
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(employee)
 
-	eh.L.Printf("[INFO] got dept id %d", employee.DepartmentId)
+	eh.L.Printf("[INFO] posting new department %s", employee.Department)
 
 	err = eh.DbMap.AddNewEmployee(employee)
 	if err != nil {
@@ -128,5 +117,28 @@ func (eh EmployeeHandler) PutEmployee(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	eh.L.Printf("[INFO] Updated %d", id)
+
+}
+
+func (eh EmployeeHandler) DeleteEmployee(rw http.ResponseWriter, r *http.Request) {
+	var err error
+
+	idS := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idS)
+
+	if err != nil {
+		eh.L.Printf("[ERROR] Failed to convert id into integer. Error %s", err)
+		http.Error(rw, "Failed to convert id into integer", http.StatusBadRequest)
+		return
+	}
+
+	err = eh.DbMap.DeleteEmployee(id)
+	if err != nil {
+		eh.L.Printf("[ERROR] Failed to delete employee %d. Error %s", id, err)
+		http.Error(rw, "Failed to delete employee", http.StatusInternalServerError)
+		return
+	}
+
+	eh.L.Printf("[INFO] Deleted employee %d", id)
 
 }
