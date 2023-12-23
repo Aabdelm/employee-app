@@ -138,3 +138,35 @@ func (DbMap *DbMap) UpdateDepartment(id int, department *EmployeeDepartment, new
 
 	return nil
 }
+
+func (DbMap *DbMap) GetAllEmployees() (employees []*Employee, err error) {
+	employees = make([]*Employee, 0)
+
+	stmt, err := DbMap.Db.Prepare(`SELECT 
+	id, first_name, last_name, email, 
+	department, employee_department.department_id 
+	FROM employee_department
+	INNER JOIN employee ON 
+	employee_department.department_id = employee.department_id`)
+
+	if err != nil {
+		DbMap.l.Printf("[ERROR] Failed to prepare statement. Error %s", err)
+		return employees, err
+	}
+
+	rows, err := stmt.Query()
+	if err != nil {
+		DbMap.l.Printf("[ERROR] Failed to query statement. Error %s", err)
+		return nil, err
+	}
+
+	for rows.Next() {
+		emp := NewEmployee()
+		if err := rows.Scan(&emp.Id, &emp.FirstName, &emp.LastName, &emp.Email, &emp.Department, &emp.DepartmentId); err != nil {
+			DbMap.l.Printf("[ERROR] Failed to scan row. Error %s", err)
+			return employees, err
+		}
+		employees = append(employees, emp)
+	}
+	return employees, err
+}
