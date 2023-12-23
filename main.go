@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	employeedb "github.com/Aabdelm/employee-app/database"
 	"github.com/Aabdelm/employee-app/handlers"
@@ -32,18 +33,25 @@ func main() {
 	//Create and setup the database
 	db := employeedb.NewDbMap(l)
 	if err := employeedb.SetupDb(db); err != nil {
-		l.Print("ERROR: FAILED TO CONNECT TO DATABASE", err)
+		l.Printf("ERROR: FAILED TO CONNECT TO DATABASE. Error %s", err)
+		time.Sleep(5 * time.Second)
+		return
 	}
 
 	defer db.Db.Close()
 
-	employeeHandler := handlers.NewEmployeHandler(l, db)
+	employeeHandler := handlers.NewEmployeeHandler(l, db)
 	deptHandler := handlers.NewDepartmentHandler(l, db)
 
 	router.Get("/employees/{id}", employeeHandler.GetEmployee)
-	router.Post("/employees/{id}", employeeHandler.PostEmployee)
+	router.Put("/employees/{id}", employeeHandler.PutEmployee)
+	router.Post("/employees/", employeeHandler.PostEmployee)
+	router.Delete("/employees/{id}", employeeHandler.DeleteEmployee)
 
-	router.Post("/departments/{id}", deptHandler.PostDepartment)
+	router.Post("/departments/", deptHandler.PostDepartment)
+	router.Get("/departments/{id}", deptHandler.GetDepartment)
+	router.Put("/departments/{id}", deptHandler.PutDepartment)
+	router.Delete("/departments/{id}", deptHandler.DeleteDepartment)
 
 	s := &http.Server{
 		Addr:    "localhost:80",
