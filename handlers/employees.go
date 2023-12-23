@@ -66,7 +66,7 @@ func (eh EmployeeHandler) PostEmployee(rw http.ResponseWriter, r *http.Request) 
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(employee)
 
-	eh.L.Printf("[INFO] posting new department %s", employee.Department)
+	eh.L.Printf("[INFO] posting new employee %d", employee.DepartmentId)
 
 	err = eh.DbMap.AddNewEmployee(employee)
 	if err != nil {

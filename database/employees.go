@@ -38,122 +38,41 @@ func (DbMap *DbMap) GetEmployeeById(id int) (*Employee, error) {
 
 }
 
-//The update methods here are really the same with little exceptions
-
-/*
-UpdateEmployeeDepartment updates the employee department
-It utilizes an employee pointer for later json parsing
-*/
-func (DbMap *DbMap) UpdateEmployeeDepartment(Employee *Employee, departmentId int) error {
+func (DbMap *DbMap) UpdateEmployee(employee *Employee) error {
 	var err error
+	if err = DbMap.disableForeignKeyChecks(); err != nil {
+		return err
+	}
+	stmt, err := DbMap.Db.Prepare(`
+	UPDATE table employee_department
+	INNER JOIN employee ON employee_department.department_id = employee.department_id
+	SET first_name = ?, last_name = ?, email = ?, employee.department_id = ?, date_modified = ?
+	WHERE employee.id = ? AND employee_department.department_id = ?
+	`)
 
-	oldId := Employee.DepartmentId
-	statement, err := DbMap.Db.Prepare(`UPDATE employee 
-	SET department_id = ?`)
 	if err != nil {
-		DbMap.l.Printf("[ERROR] Failed to prepare statement on function UpdateEmployeeDepartment %d. Error: %s\n", departmentId, err)
+		DbMap.l.Printf("[ERROR] Failed to prepare statement. %s\n", err)
 		return err
 	}
 
-	defer statement.Close()
+	defer stmt.Close()
 
-	_, err = statement.Exec(departmentId)
+	_, err = stmt.Exec(employee.FirstName, employee.LastName, employee.Email,
+		employee.DepartmentId, time.Now(), employee.Id, employee.DepartmentId)
 
 	if err != nil {
-		DbMap.l.Printf("[ERROR] Failed to execute statement on function UpdateEmployeeDepartment. Error: %s\n", err)
+		DbMap.l.Printf("[ERROR] Failed to execute statement. %s\n", err)
 		return err
 	}
 
-	Employee.Id = departmentId
-	DbMap.l.Printf("[INFO] Updated Employee %d from department %d to %d\n", Employee.Id, oldId, Employee.DepartmentId)
+	if err = DbMap.enableForeignKeyChecks(); err != nil {
+		return err
+	}
+
+	DbMap.l.Printf("Successfully updated employee %d\n", employee.Id)
+
 	return nil
 }
-
-/*
-UpdateEmployeeDepartment updates the employee's first name
-It utilizes an employee pointer for later json parsing
-*/
-func (DbMap *DbMap) UpdateEmployeeFirstName(Employee *Employee, newFirstName string, departmentId int) error {
-	var err error
-
-	oldName := Employee.FirstName
-
-	statement, err := DbMap.Db.Prepare(`UPDATE employee 
-	SET first_name = ?`)
-	if err != nil {
-		DbMap.l.Printf("[ERROR] Failed to prepare statement on function UpdateEmployeeFirstName. Error: %s\n", err)
-		return err
-	}
-
-	defer statement.Close()
-
-	_, err = statement.Exec(newFirstName)
-
-	if err != nil {
-		DbMap.l.Printf("[ERROR] Failed to execute statement on function UpdateEmployeeFirstName. Error %s\n", err)
-		return err
-	}
-
-	Employee.FirstName = newFirstName
-	DbMap.l.Printf("[INFO] Updated Employee %d first name %s to %s\n", Employee.Id, oldName, Employee.LastName)
-	return nil
-}
-
-/*
-UpdateEmployeeDepartment updates the employee's last name
-It utilizes an employee pointer for later json parsing
-*/
-func (DbMap *DbMap) UpdateEmployeeLastName(Employee *Employee, newLastName string, departmentId int) error {
-	var err error
-
-	oldName := Employee.LastName
-	statement, err := DbMap.Db.Prepare(`UPDATE employee 
-	SET last_name = ?, date_modified = ?`)
-	if err != nil {
-		DbMap.l.Printf("[ERROR] Failed to prepare statement on function UpdateEmployeeLastName. Error: %s\n", err)
-	}
-
-	defer statement.Close()
-
-	_, err = statement.Exec(newLastName, time.Now())
-
-	if err != nil {
-		DbMap.l.Printf("[ERROR] Failed to update last name %s. Error: %s\n", oldName, err)
-		return err
-	}
-
-	Employee.LastName = newLastName
-	DbMap.l.Printf("[INFO] Updated Employee %d last name %s to %s\n", Employee.Id, oldName, Employee.LastName)
-	return nil
-}
-
-/*
-UpdateEmployeeDepartment updates the employee's email
-It utilizes an employee pointer for later json parsing
-*/
-func (DbMap *DbMap) UpdateEmployeeEmail(Employee *Employee, newEmail string, departmentId int) error {
-	var err error
-
-	oldEmail := Employee.Email
-	statement, err := DbMap.Db.Prepare(`UPDATE employee 
-	SET email = ?, date_modified = ?`)
-
-	if err != nil {
-		DbMap.l.Printf("[ERROR] Failed to prepare statement on function UpdateEmployeeEmail. Error: %s\n", err)
-	}
-
-	_, err = statement.Exec(newEmail, time.Now())
-	if err != nil {
-		DbMap.l.Printf("[ERROR] Failed to update email %s. Error: %s\n", oldEmail, err)
-		return err
-	}
-
-	Employee.Email = newEmail
-	DbMap.l.Printf("[INFO] Updated Employee %d email %s to %s\n", Employee.Id, oldEmail, Employee.Email)
-	return nil
-}
-
-//
 
 // delete employee removes the employee off the database
 func (DbMap *DbMap) DeleteEmployee(id int) error {
@@ -178,16 +97,19 @@ func (DbMap *DbMap) DeleteEmployee(id int) error {
 
 func (DbMap *DbMap) AddNewEmployee(employee *Employee) error {
 	var err error
-
+	// err = DbMap.disableForeignKeyChecks()
+	// if err != nil {
+	// 	DbMap.l.Printf("Failed to disable foreign key check. Error %s", err)
+	// }
 	statement, err := DbMap.Db.Prepare(`INSERT INTO employee
-	 (id,first_name, last_name, email, department_id, date_added, date_modified) 
-	 VALUES (?,?,?,?,?,?,?)`)
+	 (first_name, last_name, email, department_id, date_added, date_modified) 
+	 VALUES (?,?,?,?,?,?)`)
 	if err != nil {
 		DbMap.l.Printf("[ERROR] Failed to prepare statement on funcion AddNewEmployee. Error %s\n", err)
 		return err
 
 	}
-	_, err = statement.Exec(employee.Id, employee.FirstName, employee.LastName, employee.Email,
+	_, err = statement.Exec(employee.FirstName, employee.LastName, employee.Email,
 		employee.DepartmentId, time.Now(), time.Now())
 
 	if err != nil {
@@ -197,5 +119,10 @@ func (DbMap *DbMap) AddNewEmployee(employee *Employee) error {
 
 	DbMap.l.Printf("[INFO] Added employee to database \n")
 
+	// err = DbMap.enableForeignKeyChecks()
+
+	// if err != nil {
+	// 	DbMap.l.Printf("Failed to enable foreign key check. Error %s", err)
+	// }
 	return nil
 }
