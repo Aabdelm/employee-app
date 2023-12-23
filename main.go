@@ -1,6 +1,7 @@
 package main
 
 import (
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -42,6 +43,18 @@ func main() {
 
 	employeeHandler := handlers.NewEmployeeHandler(l, db)
 	deptHandler := handlers.NewDepartmentHandler(l, db)
+
+	router.Get("/", func(rw http.ResponseWriter, r *http.Request) {
+		tmpl := template.Must(template.ParseFiles("./templates/employees.html"))
+		employees, err := db.GetAllEmployees()
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := tmpl.Execute(rw, employees); err != nil {
+			log.Fatal(err)
+		}
+
+	})
 
 	router.Get("/employees/{id}", employeeHandler.GetEmployee)
 	router.Put("/employees/{id}", employeeHandler.PutEmployee)
