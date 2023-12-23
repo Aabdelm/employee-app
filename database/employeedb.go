@@ -77,7 +77,9 @@ func SetupDb(DbMap *DbMap) error {
 
 	err = DbMap.Db.Ping()
 
-	DbMap.l.Println("Connected Database")
+	if err == nil {
+		DbMap.l.Println("[INFO] Connected Database")
+	}
 	return err
 }
 
