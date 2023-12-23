@@ -1,0 +1,11 @@
+<h1>{{"Testing" | printf "%q"}}</h1>
+<ul>
+    {{range .}}
+        <ul id={{.Id}}>
+            <li>{{.Id | printf "%d"}}</li>
+            <li>{{.LastName | printf "Name: %s %s" .FirstName}}</li>
+            <li>{{.Email | printf "email: %s"}}</li>
+            <li id={{.DepartmentId}}>{{.Department | printf "Department: %s"}}</li>     
+        </ul>
+    {{end}}
+</ul>
