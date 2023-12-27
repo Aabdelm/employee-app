@@ -1,0 +1,311 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body, html{
+    width: 100dvw;
+    height: 100dvh;
+    
+}
+
+.container{
+    width: 100%;
+    height: 100%;   
+}
+.top{
+    width: 100%;
+    height: 15%;
+    display: flex;
+    padding: 0 25px;
+    align-items: center;
+    gap: 35px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+.search-container{
+    width: 355px;
+    height: 40px;
+    display: flex;
+    
+    
+    
+}
+#search{
+    background-color: rgba(219, 224, 231, 0.6);
+    border-radius: 25px;
+    resize: none;
+    border: none;
+    width: 100%;
+    height: 100%;
+    padding: 0 20px;
+}
+#search-icon{
+    background: none;
+    border: none;
+    margin-left: -2.3rem;
+    margin-top: 0.2rem;
+    cursor: pointer;
+   
+}
+#add{
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+.dropdown{
+    display: flex;
+    align-items: center;
+    height: 23px;
+    cursor: pointer;
+    position: relative;
+    &:hover{
+        #chevron-down{
+            transform: rotate(180deg);
+        }
+        .dropdown-box{
+            visibility: visible;
+            overflow-y: auto;
+        }
+    }
+}
+.date, #add{
+    font-family: Helvetica, Arial sans-serif;
+    color: black;
+    font-size: 0.9rem;
+}
+
+#chevron-down{
+    fill: black;
+    transition: 0.3s ease-out;
+}
+
+.dropdown-box{
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    
+    top: 0;
+    margin-top: 1.2rem;
+    padding: 5px 0px;
+    visibility: hidden;
+    z-index: 15;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    background-color: white;
+    
+    
+}
+.dropdown-box div{
+    font-family: Helvetica, Arial sans-serif;
+    font-size: 0.85rem;
+    
+    background-color: rgba(128,128,128,0);
+    transition: background-color 0.3s ease-in-out;
+    
+    display: flex;
+    &:hover{
+        background-color: rgba(219, 224, 231, 0.6);
+        
+        border: none;
+    }
+    height: 35%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 5px;
+    margin-bottom: 15px;
+    
+}
+.dropdown-box{
+
+    :nth-child(1){
+        margin-bottom: 15px;
+        
+    }
+}
+
+.user-info{
+    position: relative;
+    //left: 55%;
+    left: 46%;
+    .dropdown-box{
+        display: flex;
+        justify-content: center;
+        position: absolute;
+        top: 0;
+        
+        
+        height: 50px;
+    }
+    
+}
+
+.user-info .dropdown-box div{
+    height: 100%;
+   
+}
+
+.body{
+    padding: 35px 25px;
+    height: 80%;
+}
+
+.greet{
+    
+    font-size: 2.75rem;
+    font-family: 'Roboto';
+    color: rgb(4, 4, 66);
+    //font-weight: 600;
+}
+.info-container{
+    height: 3rem;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+.numerics{
+    display: flex;
+    gap: 75px;
+    font-family: Helvetica, Arial sans-serif;
+    .number{
+        font-size: 2.7rem;
+        //font-weight: bold;
+        margin-bottom: 5px;
+    }
+}
+.info{
+    color: grey;
+}
+.table-container{
+    width: 100%;
+    height: 85%;
+    margin-top: 40px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+table{
+    border-collapse: collapse;
+}
+thead{
+    border-top: solid rgba(128, 128, 128, 0.2) 2px;
+    border-bottom: solid rgba(128, 128, 128, 0.2) 2px;
+    color: grey;
+    
+}
+tr{
+    height: 50px;
+    font-family: Helvetica, Arial, sans-serif;
+}
+[type="checkbox"]{
+    cursor: pointer;
+}
+
+.settings-container{
+    background-color: rgba(128, 128, 128, 0.6);
+    z-index: 1;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    visibility: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.show{
+    visibility: visible;
+}
+.info-box{
+    position: relative;
+    width: 50%;
+    height: 60%;
+    background-color: white;
+    font-family: 'Roboto', Arial, sans-serif;
+    padding: 25px;
+}
+header{
+    font-size: 35px;
+    font-weight: 500;
+    margin-bottom: 25px;
+    color: grey;
+}
+#first, #last, #email, #dept-info{
+    padding-bottom: 8px;
+    width: 47%;
+    margin-right: 15px;
+    border: none;
+    border-bottom: solid grey 2px;
+    margin-bottom: 25px;
+}
+
+#email{
+   width: 97.5%;
+    
+}
+.buttons{
+    position: absolute;
+    bottom: 0;
+    margin-bottom: 3rem;
+    width: 100%;
+    button{
+        background: none;
+        border: solid black 1px;
+        margin-right: 2rem;
+        width: 80px;
+        height: 35px;
+        cursor: pointer;
+       border: none;
+        font-family: 'Roboto', Arial, sans-serif;
+        transition: background-color 0.3s ease-in-out;
+    }
+}
+
+#submit-info{
+    background-color: rgba(0,100,0,0.8);
+    color: white;
+    
+    &:hover{
+        background-color: rgba(0,100,0,1);
+    }
+}
+#cancel-info{
+    background-color: crimson;
+    color: white;
+    
+    &:hover{
+        background-color: darkred;
+    }
+}
+.dropdown-container{
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+}
+
+.dept{
+    height: 300px;
+}
+#dept-info{
+    width: 100%;
+}
+
+.test{
+    width: 150px;
+    display: flex;
+    gap: 2rem;
+}
+
+#delete{
+    font-family: 'Roboto', Arial, sans-serif;
+    color: white;
+    background-color: crimson;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    width: 200px;
+    transition: background-color 0.3s ease-in-out;
+    cursor: pointer;
+    &:hover{
+        background-color: darkred;
+    }
+}
