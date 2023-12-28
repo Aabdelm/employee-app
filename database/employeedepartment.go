@@ -172,7 +172,7 @@ func (DbMap *DbMap) GetAllEmployees() (employees []*Employee, err error) {
 }
 
 func (DbMap *DbMap) GetAllDepartments() ([]*EmployeeDepartment, error) {
-	stmt, err := DbMap.Db.Prepare(`SELECT department_id, deparment FROM employee_department`)
+	stmt, err := DbMap.Db.Prepare(`SELECT department_id, department FROM employee_department`)
 	depts := make([]*EmployeeDepartment, 0)
 
 	if err != nil {
