@@ -60,7 +60,7 @@ func main() {
 	router.Put("/employees/{id}", employeeHandler.PutEmployee)
 	router.Post("/employees/", employeeHandler.PostEmployee)
 	router.Delete("/employees/{id}", employeeHandler.DeleteEmployee)
-	router.Get("/employees", deptHandler.GetAllEmployees)
+	router.Get("/employees/", deptHandler.GetAllEmployees)
 
 	router.Post("/departments/", deptHandler.PostDepartment)
 	router.Get("/departments/{id}", deptHandler.GetDepartment)
