@@ -97,10 +97,6 @@ func (DbMap *DbMap) DeleteEmployee(id int) error {
 
 func (DbMap *DbMap) AddNewEmployee(employee *Employee) error {
 	var err error
-	// err = DbMap.disableForeignKeyChecks()
-	// if err != nil {
-	// 	DbMap.l.Printf("Failed to disable foreign key check. Error %s", err)
-	// }
 	statement, err := DbMap.Db.Prepare(`INSERT INTO employee
 	 (first_name, last_name, email, department_id, date_added, date_modified) 
 	 VALUES (?,?,?,?,?,?)`)
@@ -118,11 +114,5 @@ func (DbMap *DbMap) AddNewEmployee(employee *Employee) error {
 	}
 
 	DbMap.l.Printf("[INFO] Added employee to database \n")
-
-	// err = DbMap.enableForeignKeyChecks()
-
-	// if err != nil {
-	// 	DbMap.l.Printf("Failed to enable foreign key check. Error %s", err)
-	// }
 	return nil
 }
