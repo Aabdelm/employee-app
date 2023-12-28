@@ -15,14 +15,14 @@ type DepartmentHandler struct {
 	DbMap employeedb.DeptMapper
 }
 
-func NewDepartmentHandler(l *log.Logger, DbMap employeedb.DeptMapper) DepartmentHandler {
-	return DepartmentHandler{
+func NewDepartmentHandler(l *log.Logger, DbMap employeedb.DeptMapper) *DepartmentHandler {
+	return &DepartmentHandler{
 		L:     l,
 		DbMap: DbMap,
 	}
 }
 
-func (dh DepartmentHandler) PostDepartment(rw http.ResponseWriter, r *http.Request) {
+func (dh *DepartmentHandler) PostDepartment(rw http.ResponseWriter, r *http.Request) {
 	var err error
 
 	dept := employeedb.NewEmployeeDepartment()
@@ -48,7 +48,7 @@ func (dh DepartmentHandler) PostDepartment(rw http.ResponseWriter, r *http.Reque
 
 }
 
-func (dh DepartmentHandler) PutDepartment(rw http.ResponseWriter, r *http.Request) {
+func (dh *DepartmentHandler) PutDepartment(rw http.ResponseWriter, r *http.Request) {
 	var err error
 
 	idStr := chi.URLParam(r, "id")
@@ -83,7 +83,7 @@ func (dh DepartmentHandler) PutDepartment(rw http.ResponseWriter, r *http.Reques
 
 }
 
-func (dh DepartmentHandler) DeleteDepartment(rw http.ResponseWriter, r *http.Request) {
+func (dh *DepartmentHandler) DeleteDepartment(rw http.ResponseWriter, r *http.Request) {
 	var err error
 
 	idS := chi.URLParam(r, "id")
@@ -106,7 +106,7 @@ func (dh DepartmentHandler) DeleteDepartment(rw http.ResponseWriter, r *http.Req
 	dh.L.Printf("[INFO] Deleted id %d", id)
 }
 
-func (dh DepartmentHandler) GetDepartment(rw http.ResponseWriter, r *http.Request) {
+func (dh *DepartmentHandler) GetDepartment(rw http.ResponseWriter, r *http.Request) {
 	var err error
 	idStr := chi.URLParam(r, "id")
 
@@ -135,4 +135,40 @@ func (dh DepartmentHandler) GetDepartment(rw http.ResponseWriter, r *http.Reques
 	}
 	dh.L.Printf("[INFO] Successfully retrieved Employeed for dept %d", id)
 
+}
+
+func (dh *DepartmentHandler) GetAllDepartments(rw http.ResponseWriter, r *http.Request) {
+	dh.L.Printf("[INFO] Function GetAllDepartments called")
+	depts, err := dh.DbMap.GetAllDepartments()
+	if err != nil {
+		dh.L.Printf("[ERROR] Failed to get all departments. Error %s", err)
+		http.Error(rw, "Failed to get departments", http.StatusBadRequest)
+		return
+	}
+
+	enc := json.NewEncoder(rw)
+	if err := enc.Encode(depts); err != nil {
+		dh.L.Printf("[ERROR] Failed to encode JSON. Error %s", err)
+		http.Error(rw, "Failed to encode JSON", http.StatusInternalServerError)
+		return
+	}
+	dh.L.Println("[INFO] sent departments")
+}
+
+func (dh *DepartmentHandler) GetAllEmployees(rw http.ResponseWriter, r *http.Request) {
+	dh.L.Printf("[INFO] Function GetAllEmployees called")
+	emps, err := dh.DbMap.GetAllEmployees()
+	if err != nil {
+		dh.L.Printf("[ERROR] Failed to get all employees. Error %s", err)
+		http.Error(rw, "Failed to get employees", http.StatusBadRequest)
+		return
+	}
+
+	enc := json.NewEncoder(rw)
+	if err := enc.Encode(emps); err != nil {
+		dh.L.Printf("[ERROR] Failed to encode JSON. Error %s", err)
+		http.Error(rw, "Failed to encode JSON", http.StatusInternalServerError)
+		return
+	}
+	dh.L.Println("[INFO] sent all employees")
 }
