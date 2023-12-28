@@ -11,7 +11,7 @@ it returns a nil error if no error was found
 func (DbMap *DbMap) GetEmployeesByDepartment(deptId int) (employees []*Employee, err error) {
 	//Query rows
 	statement, err := DbMap.Db.Prepare(`
-	SELECT id, first_name, last_name, email, department_id
+	SELECT id, first_name, last_name, email, employee_department.department_id
 	FROM employee_department
 	INNER JOIN employee ON id = employee.department_id
 	WHERE employee_department.department_id = ?`)
@@ -169,4 +169,30 @@ func (DbMap *DbMap) GetAllEmployees() (employees []*Employee, err error) {
 		employees = append(employees, emp)
 	}
 	return employees, err
+}
+
+func (DbMap *DbMap) GetAllDepartments() ([]*EmployeeDepartment, error) {
+	stmt, err := DbMap.Db.Prepare(`SELECT department_id, deparment FROM employee_department`)
+	depts := make([]*EmployeeDepartment, 0)
+
+	if err != nil {
+		DbMap.l.Printf("[ERROR] Failed to prepare statement in function getAllDepartments, error %s", err)
+		return nil, err
+	}
+
+	rows, err := stmt.Query()
+
+	if err != nil {
+		DbMap.l.Printf("[ERROR] Failed to query statement in function getAllDepartments, error %s", err)
+		return nil, err
+	}
+
+	for rows.Next() {
+		dept := NewEmployeeDepartment()
+		rows.Scan(&dept.Id, &dept.Department)
+		depts = append(depts, dept)
+
+	}
+
+	return depts, nil
 }
