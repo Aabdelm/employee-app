@@ -58,10 +58,24 @@ func (md MockDeptDb) RemoveDepartment(deptId int) error {
 func (md MockDeptDb) UpdateDepartment(id int, dept *employeedb.EmployeeDepartment, newName string) error {
 	_, exists := md[id]
 	if !exists {
-		return fmt.Errorf("Error: deptartment %d does not exist.", id)
+		return fmt.Errorf("Error: department %d does not exist.", id)
 	}
 	md[id].eDept.Department = newName
 	return nil
+}
+
+func (md MockDeptDb) GetAllDepartments() (depts []*employeedb.EmployeeDepartment, err error) {
+	for _, dept := range md {
+		depts = append(depts, dept.eDept)
+	}
+	return depts, nil
+}
+
+func (md MockDeptDb) GetAllEmployees() (emps []*employeedb.Employee, err error) {
+	for _, d := range md {
+		emps = append(emps, d.employees...)
+	}
+	return emps, nil
 }
 
 // Unit tests
@@ -93,7 +107,6 @@ func TestAddNewDepartment(t *testing.T) {
 
 }
 
-// unimplemented methods
 func TestUpdateDepartment(t *testing.T) {
 	md := make(MockDeptDb, 0)
 	testOldDept := &employeedb.EmployeeDepartment{
@@ -234,6 +247,142 @@ func TestDeleteDepartments(t *testing.T) {
 
 	if result.StatusCode != http.StatusOK {
 		t.Fatalf("Error: Expected %d, got %d", http.StatusOK, result.StatusCode)
+	}
+
+}
+
+func TestGetAllDepartments(t *testing.T) {
+	req := httptest.NewRequest("GET", "/departments/", nil)
+	rec := httptest.NewRecorder()
+
+	md := make(MockDeptDb, 0)
+	depts := []*employeedb.EmployeeDepartment{
+		{
+			Id:         1,
+			Department: "Finance",
+		},
+		{
+			Department: "Engineering",
+			Id:         2,
+		},
+		{
+			Department: "HR",
+			Id:         3,
+		},
+		{
+			Department: "Accounting",
+			Id:         10,
+		},
+	}
+	for _, dept := range depts {
+		md[dept.Id] = MockDeptStruct{
+			eDept:     dept,
+			employees: nil, //We don't care about this at the moment
+		}
+	}
+
+	dh := &handlers.DepartmentHandler{
+		L:     log.Default(),
+		DbMap: md,
+	}
+
+	dh.GetAllDepartments(rec, req)
+
+	result := rec.Result()
+
+	if result.StatusCode != http.StatusOK {
+		t.Fatalf("Expected %d, got %d", http.StatusOK, result.StatusCode)
+	}
+
+}
+
+func TestGetAllEmployees(t *testing.T) {
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/employees/", nil)
+
+	md := make(MockDeptDb, 0)
+	depts := []*employeedb.EmployeeDepartment{
+		{
+			Id:         1,
+			Department: "Finance",
+		},
+		{
+			Department: "Engineering",
+			Id:         2,
+		},
+	}
+
+	md[0] = MockDeptStruct{
+		eDept: depts[0],
+		employees: []*employeedb.Employee{
+			{
+				Id:           3,
+				FirstName:    "First",
+				LastName:     "Last",
+				Email:        "test@something.xyz",
+				Department:   depts[0].Department,
+				DepartmentId: depts[0].Id,
+			},
+			{
+				Id:           6,
+				FirstName:    "Test2",
+				LastName:     "Last2",
+				Email:        "test2@something.xyz",
+				Department:   depts[0].Department,
+				DepartmentId: depts[0].Id,
+			},
+			{
+				Id:           2,
+				FirstName:    "First3",
+				LastName:     "Last3",
+				Email:        "test3@something.xyz",
+				Department:   depts[0].Department,
+				DepartmentId: depts[0].Id,
+			},
+		},
+	}
+
+	md[1] = MockDeptStruct{
+		eDept: depts[1],
+		employees: []*employeedb.Employee{
+			{
+				Id:           5,
+				FirstName:    "First5",
+				LastName:     "Last5",
+				Email:        "test5@something.xyz",
+				Department:   depts[1].Department,
+				DepartmentId: depts[1].Id,
+			},
+			{
+				Id:           10,
+				FirstName:    "Test10",
+				LastName:     "Last10",
+				Email:        "test10@something.xyz",
+				Department:   depts[1].Department,
+				DepartmentId: depts[1].Id,
+			},
+			{
+				Id:           15,
+				FirstName:    "First15",
+				LastName:     "Last15",
+				Email:        "test15@something.xyz",
+				Department:   depts[1].Department,
+				DepartmentId: depts[1].Id,
+			},
+		},
+	}
+
+	dh := &handlers.DepartmentHandler{
+		L:     log.Default(),
+		DbMap: md,
+	}
+
+	dh.GetAllDepartments(rec, req)
+
+	result := rec.Result()
+
+	if result.StatusCode != http.StatusOK {
+		t.Fatalf("Expected %d, got %d", http.StatusOK, result.StatusCode)
 	}
 
 }
