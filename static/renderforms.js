@@ -1,12 +1,14 @@
-export function addEmployee(employee){
-    /*
+/*
         employee fields:
         id, first, last, email, department, departmentID
-    */
-   const body = document.querySelector('body');
+*/
 
-   const settingsElement = document.createElement('div');
-   settingsElement.classList.add('settings-container');
+
+export function addEmployee(){
+    const body = document.querySelector('body');
+    const settingsElement = document.createElement('div');
+    settingsElement.classList.add('settings-container');
+    settingsElement.classList.add('show');
 
    const infoBox = document.createElement('div');
    infoBox.classList.add('info-box');
@@ -22,7 +24,7 @@ export function addEmployee(employee){
    const firstName = createFormElement('text','First Name', 'first');
    const lastName = createFormElement('text', 'Last Name', 'last');
    const email = createFormElement('email','Email','email');
-
+   
    form.appendChild(firstName);
    form.appendChild(lastName);
    form.appendChild(email);
@@ -113,19 +115,14 @@ export function addEmployee(employee){
    const buttons = document.createElement('div');
    buttons.className = 'buttons';
 
-   const submit = document.createElement('button');
-   submit.type = 'submit';
-   submit.id = 'submit-info';
-   submit.textContent = 'Submit';
+   const [submit, cancel] = renderButtons();
+   
 
    //Add POST request here
    submit.addEventListener(`click`, ()=>{})
    buttons.appendChild(submit);
 
-   const cancel = document.createElement('button');
-   cancel.type = 'button';
-   cancel.id = 'cancel-info';
-   cancel.textContent = 'Cancel';
+   
    cancel.addEventListener(`click`,()=>{
     settingsElement.remove();
    })
@@ -137,6 +134,59 @@ export function addEmployee(employee){
    settingsElement.classList.add('show');
 
    body.insertBefore(settingsElement, document.querySelector('.container'))
+
+}
+
+export function addDepartment(){
+    const body = document.querySelector('body');
+    const settingsElement = document.createElement('div');
+    settingsElement.classList.add('settings-container');
+    settingsElement.classList.add('show');
+    
+    const infoBox = document.createElement('div');
+    infoBox.classList.add('info-box');
+    infoBox.classList.add('dept');
+
+    const header = document.createElement('header');
+    header.textContent = 'New Department';
+
+    infoBox.appendChild(header);
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+
+    const input = document.createElement('input');
+    input.type = 'Text';
+    input.placeholder = 'Department';
+    input.id = 'dept-info';
+
+    form.appendChild(input);
+
+    form.appendChild(document.createElement('br'));
+    
+    const buttons = document.createElement('div');
+    buttons.className = 'buttons';
+
+    const [submit, cancel] = renderButtons();
+
+    cancel.addEventListener(`click`, ()=>{
+        settingsElement.remove();
+    });
+
+    submit.addEventListener(`click`, ()=>{
+        //submit POST request here
+    })
+
+    buttons.appendChild(submit);
+    buttons.appendChild(cancel);
+
+    form.appendChild(buttons);
+    infoBox.appendChild(form);
+
+    settingsElement.appendChild(infoBox);
+    body.insertBefore(settingsElement, document.querySelector('.container'));
+
+
 
 }
 
@@ -154,4 +204,18 @@ const mockDeptFactory = (id,deptName) => {
         Id: id,
         DeptName: deptName,
     };
+}
+
+function renderButtons(){
+   const submit = document.createElement('button');
+   submit.type = 'submit';
+   submit.id = 'submit-info';
+   submit.textContent = 'Submit';
+
+   const cancel = document.createElement('button');
+   cancel.type = 'button';
+   cancel.id = 'cancel-info';
+   cancel.textContent = 'Cancel';
+
+   return [submit, cancel]
 }
