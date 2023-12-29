@@ -1,3 +1,4 @@
+import  {addEmployee} from "/static/renderforms.js"
 
 //Responsible for dealing with the DOM
 function main(){
@@ -21,9 +22,11 @@ function main(){
         //TODO: Add a DELETE request (for later)
     })
 
-    const dropdown = document.querySelectorAll('.dropdown-box');
-    
-    
+    const newItem = document.querySelector('.new-item');
+    const newItemDrop = newItem.querySelector('.dropdown-box');
+    const employeeBox = newItemDrop.children[0];
+
+    employeeBox.addEventListener(`click`,addEmployee);
 
 }
 
