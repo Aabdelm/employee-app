@@ -1,4 +1,4 @@
-import  {addEmployee} from "/static/renderforms.js"
+import  {renderEmployee, addDepartment} from "/static/renderforms.js"
 
 //Responsible for dealing with the DOM
 function main(){
@@ -13,7 +13,7 @@ function main(){
             //Somewhat lazy approach here
             controlVisibility(e.target);
             //in case the checkall button was previously enabled
-            disableTest();
+            disable();
         });
     })
     
@@ -24,9 +24,24 @@ function main(){
 
     const newItem = document.querySelector('.new-item');
     const newItemDrop = newItem.querySelector('.dropdown-box');
-    const employeeBox = newItemDrop.children[0];
 
-    employeeBox.addEventListener(`click`,addEmployee);
+    const employeeBox = newItemDrop.children[0];
+    const departmentBox = newItemDrop.children[1];
+
+    employeeBox.addEventListener(`click`, ()=>{
+        renderEmployee(employee, 'POST');
+    });
+
+    const updateButton = document.querySelector('#update');
+    updateButton.addEventListener('click', ()=>{
+        const select = document.querySelector('.selected');
+
+        const emp = convertFieldToEmployee(select);
+        renderEmployee(emp, 'PUT');
+        
+
+    });
+    departmentBox.addEventListener(`click`, addDepartment);
 
 }
 
@@ -58,7 +73,7 @@ function controlVisibility(ele){
     
 }
 
-function disableTest(){
+function disable(){
     const len = [...document.querySelectorAll('#select')].filter(i => i.checked).length;
     const maxLen = [...document.querySelectorAll('#select')].length;
     const selectAllButton = document.querySelector('#select-all');
@@ -66,4 +81,23 @@ function disableTest(){
     if(len != maxLen) selectAllButton.checked = false;
     
 }
+
+const employee = (id, first, last, email, department, departmentId) => {
+    return {id, first, last, email, department, departmentId}
+}
+
+//Get employee info from an HTML element
+const convertFieldToEmployee = (select) => {
+
+        const id = Number(select.querySelector("#employee-id").textContent);
+        const lastName = select.querySelector('#last-name').textContent;
+        const firstName = document.querySelector('#first-name').textContent;
+        const email = document.querySelector('#email-data').textContent;
+        const dept = document.querySelector('[data-dept-id]').textContent;
+        const deptId = Number(document.querySelector('[data-dept-id]').dataset.deptId);
+
+        const emp = employee(id, firstName, lastName, email, dept, deptId);
+        return emp;
+}
+
 main();
