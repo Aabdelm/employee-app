@@ -4,7 +4,8 @@
 */
 
 
-export function addEmployee(){
+//Renders employee based on method 
+export function renderEmployee(employee, method){
     const body = document.querySelector('body');
     const settingsElement = document.createElement('div');
     settingsElement.classList.add('settings-container');
@@ -24,6 +25,11 @@ export function addEmployee(){
    const firstName = createFormElement('text','First Name', 'first');
    const lastName = createFormElement('text', 'Last Name', 'last');
    const email = createFormElement('email','Email','email');
+   if(method == 'PUT'){
+        firstName.value = employee.first;
+        lastName.value = employee.last;
+        email.value = employee.email;
+   }
    
    form.appendChild(firstName);
    form.appendChild(lastName);
@@ -37,11 +43,19 @@ export function addEmployee(){
 
    const button = document.createElement('button');
    button.type = 'button';
-   button.id = 'add';
-   //We'll change this into the id of the current department
-   //For the moment we'll just use a fake department
-   //We'll poll the API later; For the time being, these fake fields will be used
-   button.textContent = 'Department';
+
+   //Somewhat of a "Brand new field"
+    if(method == 'POST'){
+        button.id = 'add';
+        button.textContent = 'Department';
+ 
+    }
+    //Change the button to represent "current employee" being editted
+    if(method == 'PUT'){
+        button.id = 'employee';
+        button.textContent = employee.department;
+        button.dataset['dept-Id'] = employee.departmentId;
+    }
    dropdown.appendChild(button);
 
    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg')
@@ -67,37 +81,42 @@ export function addEmployee(){
    svg.appendChild(title);
 
 
+   //We'll change this into the id of the current department
+   //For the moment we'll just use a fake department
+   //We'll poll the API later; For the time being, these fake fields will be used
+   let dropDowndepts = [mockDeptFactory(12,'Engineering'),mockDeptFactory(15, 'Finance')];
 
-   //This will be changed with a GET request
-   const dropDowndepts = [mockDeptFactory(12,'Engineering'),mockDeptFactory(15, 'Finance')];
+   //Get out the duplicate IDs for PUT requests 
+   dropDowndepts = dropDowndepts.filter(dept => dept.Id != employee.departmentId);
+   
 
    dropDowndepts.forEach(dept => {
     const deptDiv = document.createElement('div');
     deptDiv.textContent = dept.DeptName;
-    deptDiv.dataset["department-Id"] = dept.Id;
+    deptDiv.dataset["dept-Id"] = dept.Id;
 
     deptDiv.addEventListener(`click`, ()=>{
         //Swap elements
         //We don't need to swap if the box is default (which is 'Departments')
         if(button.id == 'add'){
             const temp = deptDiv;
-            button.dataset['department-Id'] = temp.dataset['department-Id'];
+            button.dataset['dept-Id'] = temp.dataset['dept-Id'];
             button.textContent = temp.textContent;
             deptDiv.remove();
             button.id = 'employee';
         }else{
             const temp = {
-                Id: button.dataset['department-Id'],
+                Id: button.dataset['dept-Id'],
                 DeptName: button.textContent,
             };
             //A (very lazy) swapping apporach
             button.textContent = deptDiv.textContent;
-            button.dataset['department-Id'] = deptDiv.dataset['department-Id'];
+            button.dataset['dept-Id'] = deptDiv.dataset['dept-Id'];
             //Change it to employee for the next swapping approach
             
 
             deptDiv.textContent = temp.DeptName;
-            deptDiv.dataset['department-Id'] = temp.Id;
+            deptDiv.dataset['dept-Id'] = temp.Id;
 
         }
 
@@ -142,7 +161,7 @@ export function addDepartment(){
     const settingsElement = document.createElement('div');
     settingsElement.classList.add('settings-container');
     settingsElement.classList.add('show');
-    
+
     const infoBox = document.createElement('div');
     infoBox.classList.add('info-box');
     infoBox.classList.add('dept');
