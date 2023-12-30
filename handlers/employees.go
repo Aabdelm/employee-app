@@ -15,15 +15,15 @@ type EmployeeHandler struct {
 	DbMap employeedb.EmployeeMapper
 }
 
-func NewEmployeeHandler(l *log.Logger, DbMap employeedb.EmployeeMapper) EmployeeHandler {
+func NewEmployeeHandler(l *log.Logger, DbMap employeedb.EmployeeMapper) *EmployeeHandler {
 
-	return EmployeeHandler{
+	return &EmployeeHandler{
 		L:     l,
 		DbMap: DbMap,
 	}
 }
 
-func (eh EmployeeHandler) GetEmployee(rw http.ResponseWriter, r *http.Request) {
+func (eh *EmployeeHandler) GetEmployee(rw http.ResponseWriter, r *http.Request) {
 	var err error
 	idString := chi.URLParam(r, "id")
 
@@ -59,7 +59,7 @@ func (eh EmployeeHandler) GetEmployee(rw http.ResponseWriter, r *http.Request) {
 
 }
 
-func (eh EmployeeHandler) PostEmployee(rw http.ResponseWriter, r *http.Request) {
+func (eh *EmployeeHandler) PostEmployee(rw http.ResponseWriter, r *http.Request) {
 	var err error
 	employee := employeedb.NewEmployee()
 
@@ -76,7 +76,7 @@ func (eh EmployeeHandler) PostEmployee(rw http.ResponseWriter, r *http.Request) 
 
 }
 
-func (eh EmployeeHandler) PutEmployee(rw http.ResponseWriter, r *http.Request) {
+func (eh *EmployeeHandler) PutEmployee(rw http.ResponseWriter, r *http.Request) {
 	var err error
 	param := chi.URLParam(r, "id")
 
@@ -120,7 +120,7 @@ func (eh EmployeeHandler) PutEmployee(rw http.ResponseWriter, r *http.Request) {
 
 }
 
-func (eh EmployeeHandler) DeleteEmployee(rw http.ResponseWriter, r *http.Request) {
+func (eh *EmployeeHandler) DeleteEmployee(rw http.ResponseWriter, r *http.Request) {
 	var err error
 
 	idS := chi.URLParam(r, "id")
