@@ -2,8 +2,8 @@
         employee fields:
         id, first, last, email, department, departmentID
 */
-
-
+import { employee } from "./script.js";
+import { submitEmployee } from "./apis.js";
 //Renders employee based on method 
 export async function renderEmployee(employee, method){
     const body = document.querySelector('body');
@@ -26,8 +26,8 @@ export async function renderEmployee(employee, method){
    const lastName = createFormElement('text', 'Last Name', 'last');
    const email = createFormElement('email','Email','email');
    if(method == 'PUT'){
-        firstName.value = employee.first;
-        lastName.value = employee.last;
+        firstName.value = employee.firstName;
+        lastName.value = employee.lastName;
         email.value = employee.email;
    }
    
@@ -93,23 +93,22 @@ export async function renderEmployee(employee, method){
    
 
    dropDowndepts.forEach(dept => {
-    console.log(dept);
     const deptDiv = document.createElement('div');
     deptDiv.textContent = dept.department;
-    deptDiv.dataset["dept-Id"] = dept.deparmentId;
+    deptDiv.dataset["deptId"] = dept.departmentId;
 
     deptDiv.addEventListener(`click`, ()=>{
         //Swap elements
         //We don't need to swap if the box is default (which is 'Departments')
         if(button.id == 'add'){
             const temp = deptDiv;
-            button.dataset['dept-Id'] = temp.dataset['dept-Id'];
+            button.dataset['deptId'] = temp.dataset['deptId'];
             button.textContent = temp.textContent;
             deptDiv.remove();
             button.id = 'employee';
         }else{
             const temp = {
-                departmentId: button.dataset['dept-Id'],
+                departmentId: button.dataset['deptId'],
                 department: button.textContent,
             };
             //A (very lazy) swapping apporach
@@ -141,7 +140,27 @@ export async function renderEmployee(employee, method){
    
 
    //Add POST request here
-   submit.addEventListener(`click`, ()=>{})
+   submit.addEventListener(`click`, (e)=>{
+        
+        const newDeptId = Number(button.dataset['deptId']);
+        const newEmail = email.value;
+        const newFirst = firstName.value;
+        console.log(`First: ${newFirst}`);
+        const newLast = lastName.value;
+        const newDept = button.textContent;
+        //The only thing that won't change
+        //Note: This is null for the post request since it will be changed later
+
+        const id = method == 'POST' ? 0 : employee.id;
+
+        const emp = employee(id,newFirst,newLast,newEmail,newDept,newDeptId);
+
+        //We no longer need the form here
+        submitEmployee(emp, method);
+
+        settingsElement.remove();
+        e.preventDefault();
+   })
    buttons.appendChild(submit);
 
    
@@ -195,8 +214,8 @@ export function addDepartment(){
         settingsElement.remove();
     });
 
-    submit.addEventListener(`click`, ()=>{
-        //submit POST request here
+    submit.addEventListener('click', ()=>{
+        //
     })
 
     buttons.appendChild(submit);
@@ -221,12 +240,6 @@ const createFormElement = (type, placeholder, id) => {
     return ele;
 }
 
-const mockDeptFactory = (id,deptName) => {
-    return {
-        Id: id,
-        DeptName: deptName,
-    };
-}
 
 function renderButtons(){
    const submit = document.createElement('button');
@@ -244,8 +257,13 @@ function renderButtons(){
 
 
 async function pollDepartments(){
-    const initData = await fetch('http://localhost:80/departments/')
-    const resp = await initData.json();
-    return resp;
+    try{
+        const initData = await fetch('http://localhost:80/departments/')
+        const resp = await initData.json();
+        return resp;
+    }catch(e){
+        console.error(e);
+    }
     
 }
+
