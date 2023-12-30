@@ -100,7 +100,6 @@ func (DbMap *DbMap) DeleteEmployee(id int) error {
 
 func (DbMap *DbMap) AddNewEmployee(employee *Employee) error {
 	var err error
-
 	DbMap.l.Println("[INFO] Function AddNewEmployee called")
 
 	statement, err := DbMap.Db.Prepare(`INSERT INTO employee
@@ -111,13 +110,22 @@ func (DbMap *DbMap) AddNewEmployee(employee *Employee) error {
 		return err
 
 	}
-	_, err = statement.Exec(employee.FirstName, employee.LastName, employee.Email,
+	res, err := statement.Exec(employee.FirstName, employee.LastName, employee.Email,
 		employee.DepartmentId, time.Now(), time.Now())
 
 	if err != nil {
 		DbMap.l.Printf("[ERROR] Failed to execute statement. Error %s\n", err)
 		return err
 	}
+	//We'll need a new id for the json request
+	DbMap.l.Printf("Assigning new id in function AddNewEmployee\n")
+	id, err := res.LastInsertId()
+	if err != nil {
+		DbMap.l.Printf("Failed to parse last inserted Id. Error %s", err)
+		return err
+	}
+
+	employee.Id = int(id)
 
 	DbMap.l.Printf("[INFO] Added employee to database \n")
 	return nil
