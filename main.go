@@ -13,6 +13,7 @@ import (
 	"github.com/Aabdelm/employee-app/handlers"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 )
 
 func main() {
@@ -26,6 +27,14 @@ func main() {
 	//Method router for usage in tandem with current logger
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
+
+	router.Use(cors.Handler(
+		cors.Options{
+			AllowedOrigins: []string{"http://127.0.0.1:5500"},
+			AllowedMethods: []string{"PUT", "GET", "POST", "DELETE"},
+			AllowedHeaders: []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		},
+	))
 
 	//Create a signal channel to detect interrupts and/or shutdowns
 	sig := make(chan os.Signal, 1)

@@ -5,7 +5,7 @@
 
 
 //Renders employee based on method 
-export function renderEmployee(employee, method){
+export async function renderEmployee(employee, method){
     const body = document.querySelector('body');
     const settingsElement = document.createElement('div');
     settingsElement.classList.add('settings-container');
@@ -84,16 +84,19 @@ export function renderEmployee(employee, method){
    //We'll change this into the id of the current department
    //For the moment we'll just use a fake department
    //We'll poll the API later; For the time being, these fake fields will be used
-   let dropDowndepts = [mockDeptFactory(12,'Engineering'),mockDeptFactory(15, 'Finance')];
 
+   
+   let dropDowndepts = await pollDepartments();
+   
    //Get out the duplicate IDs for PUT requests 
-   dropDowndepts = dropDowndepts.filter(dept => dept.Id != employee.departmentId);
+   dropDowndepts = dropDowndepts.filter(dept => dept.departmentId != employee.departmentId);
    
 
    dropDowndepts.forEach(dept => {
+    console.log(dept);
     const deptDiv = document.createElement('div');
-    deptDiv.textContent = dept.DeptName;
-    deptDiv.dataset["dept-Id"] = dept.Id;
+    deptDiv.textContent = dept.department;
+    deptDiv.dataset["dept-Id"] = dept.deparmentId;
 
     deptDiv.addEventListener(`click`, ()=>{
         //Swap elements
@@ -106,8 +109,8 @@ export function renderEmployee(employee, method){
             button.id = 'employee';
         }else{
             const temp = {
-                Id: button.dataset['dept-Id'],
-                DeptName: button.textContent,
+                departmentId: button.dataset['dept-Id'],
+                department: button.textContent,
             };
             //A (very lazy) swapping apporach
             button.textContent = deptDiv.textContent;
@@ -115,7 +118,7 @@ export function renderEmployee(employee, method){
             //Change it to employee for the next swapping approach
             
 
-            deptDiv.textContent = temp.DeptName;
+            deptDiv.textContent = temp.department;
             deptDiv.dataset['dept-Id'] = temp.Id;
 
         }
@@ -237,4 +240,12 @@ function renderButtons(){
    cancel.textContent = 'Cancel';
 
    return [submit, cancel]
+}
+
+
+async function pollDepartments(){
+    const initData = await fetch('http://localhost:80/departments/')
+    const resp = await initData.json();
+    return resp;
+    
 }
