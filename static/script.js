@@ -1,4 +1,5 @@
 import  {renderEmployee, addDepartment} from "/static/renderforms.js"
+import { deleteEmployee } from "./apis.js";
 
 //Responsible for dealing with the DOM
 function main(){
@@ -9,12 +10,7 @@ function main(){
 
     const select = document.querySelectorAll('#select');
     select.forEach(ele =>{
-        ele.addEventListener(`click`, (e)=>{
-            //Somewhat lazy approach here
-            controlVisibility(e.target);
-            //in case the checkall button was previously enabled
-            disable();
-        });
+        ele.addEventListener(`click`, renderVisibility);
     })
     
     const deleteButton = document.querySelector('#delete');
@@ -82,22 +78,75 @@ function disable(){
     
 }
 
-const employee = (id, first, last, email, department, departmentId) => {
-    return {id, first, last, email, department, departmentId}
+export const employee = (id, firstName, lastName, email, department, departmentId) => {
+    return {id, firstName, lastName, email, department, departmentId}
+}
+
+export async function renderNewEmployee(emp){
+    const tbody = document.querySelector('tbody');
+    const tr = document.createElement('tr');
+
+    const buttonParent = document.createElement('td');
+    const button = document.createElement('input');
+    button.id = 'select';
+    button.type = 'checkbox';
+    button.name = 'checkbox';
+
+    //Add button functionality
+    button.addEventListener('click', renderVisibility);
+
+    buttonParent.appendChild(button);
+    tr.appendChild(buttonParent);
+
+    const empId = document.createElement('td');
+    empId.id = 'employee-id';
+    empId.textContent = emp.id;
+    tr.appendChild(empId);
+
+    const lastName = document.createElement('td');
+    lastName.id = 'last-name';
+    lastName.textContent = emp.lastName;
+    tr.appendChild(lastName);
+
+    const firstName = document.createElement('td');
+    firstName.id = 'first-name';
+    firstName.textContent = emp.firstName;
+    tr.appendChild(firstName);
+
+    const email = document.createElement('td');
+    email.id = 'email-data';
+    email.textContent = emp.email;
+    tr.appendChild(email);
+
+    const dept = document.createElement('td');
+    dept.dataset['deptId'] = emp.departmentId;
+    dept.textContent = emp.department;
+    tr.appendChild(dept);
+
+    tbody.appendChild(tr);
+
+    
+    
 }
 
 //Get employee info from an HTML element
 const convertFieldToEmployee = (select) => {
-
         const id = Number(select.querySelector("#employee-id").textContent);
         const lastName = select.querySelector('#last-name').textContent;
-        const firstName = document.querySelector('#first-name').textContent;
-        const email = document.querySelector('#email-data').textContent;
-        const dept = document.querySelector('[data-dept-id]').textContent;
-        const deptId = Number(document.querySelector('[data-dept-id]').dataset.deptId);
+        const firstName = select.querySelector('#first-name').textContent;
+        const email = select.querySelector('#email-data').textContent;
+        const dept = select.querySelector('[data-dept-id]').textContent;
+        const deptId = Number(select.querySelector('[data-dept-id]').dataset.deptId);
 
         const emp = employee(id, firstName, lastName, email, dept, deptId);
         return emp;
+}
+
+function renderVisibility(e){
+            //Somewhat lazy approach here
+            controlVisibility(e.target);
+            //in case the checkall button was previously enabled
+            disable();
 }
 
 main();
