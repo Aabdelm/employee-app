@@ -1,5 +1,5 @@
 import  {renderEmployee, addDepartment} from "/static/renderforms.js"
-import { deleteEmployee } from "./apis.js";
+import { deleteEmployees } from "./apis.js";
 
 //Responsible for dealing with the DOM
 function main(){
@@ -15,7 +15,13 @@ function main(){
     
     const deleteButton = document.querySelector('#delete');
     deleteButton.addEventListener(`click`, ()=>{
-        //TODO: Add a DELETE request (for later)
+        const emps = [];
+        const selectedAll = document.querySelectorAll('.selected');
+        selectedAll.forEach(ele => {
+            const emp = convertFieldToEmployee(ele);
+            emps.push(emp);
+        })
+        deleteEmployees(emps);
     })
 
     const newItem = document.querySelector('.new-item');
@@ -25,7 +31,7 @@ function main(){
     const departmentBox = newItemDrop.children[1];
 
     employeeBox.addEventListener(`click`, ()=>{
-        renderEmployee(employee, 'POST');
+        renderEmployee(Employee, 'POST');
     });
 
     const updateButton = document.querySelector('#update');
@@ -78,9 +84,10 @@ function disable(){
     
 }
 
-export const employee = (id, firstName, lastName, email, department, departmentId) => {
+export function Employee(id, firstName, lastName, email, department, departmentId){
     return {id, firstName, lastName, email, department, departmentId}
 }
+
 
 export async function renderNewEmployee(emp){
     const tbody = document.querySelector('tbody');
@@ -129,6 +136,32 @@ export async function renderNewEmployee(emp){
     
 }
 
+export async function renderExistingEmployee(emp){
+    const select = document.querySelector('.selected');
+
+    const lastName = select.querySelector('#last-name');
+    lastName.textContent = emp.lastName;
+
+    const firstName = select.querySelector('#first-name');
+    firstName.textContent = emp.firstName;
+
+    const email = select.querySelector('#email-data');
+    email.textContent = emp.email;
+
+    const dept = select.querySelector('[data-dept-id]');
+    dept.textContent = emp.department;
+
+    dept.dataset.deptId = emp.departmentId;
+}
+
+export function removeDeletedEmployees(){
+    const selectedAll = document.querySelectorAll('.selected');
+    selectedAll.forEach(ele => {
+       
+        ele.remove();
+    })
+}
+
 //Get employee info from an HTML element
 const convertFieldToEmployee = (select) => {
         const id = Number(select.querySelector("#employee-id").textContent);
@@ -138,7 +171,7 @@ const convertFieldToEmployee = (select) => {
         const dept = select.querySelector('[data-dept-id]').textContent;
         const deptId = Number(select.querySelector('[data-dept-id]').dataset.deptId);
 
-        const emp = employee(id, firstName, lastName, email, dept, deptId);
+        const emp = Employee(id, firstName, lastName, email, dept, deptId);
         return emp;
 }
 
