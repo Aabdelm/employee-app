@@ -42,14 +42,15 @@ func (DbMap *DbMap) UpdateEmployee(employee *Employee) error {
 	var err error
 	DbMap.l.Println("Function UpdateEmployee called")
 
-	if err = DbMap.disableForeignKeyChecks(); err != nil {
-		return err
-	}
+	// if err = DbMap.disableForeignKeyChecks(); err != nil {
+	// 	return err
+	// }
+
 	stmt, err := DbMap.Db.Prepare(`
-	UPDATE table employee_department
+	UPDATE employee_department
 	INNER JOIN employee ON employee_department.department_id = employee.department_id
-	SET first_name = ?, last_name = ?, email = ?, employee.department_id = ?, date_modified = ?
-	WHERE employee.id = ? AND employee_department.department_id = ?
+	SET first_name = ?, last_name = ?, email = ?, employee.department_id = ?, employee.date_modified = ?
+	WHERE id = ? AND employee_department.department_id = ?
 	`)
 
 	if err != nil {
@@ -68,6 +69,7 @@ func (DbMap *DbMap) UpdateEmployee(employee *Employee) error {
 	}
 
 	if err = DbMap.enableForeignKeyChecks(); err != nil {
+		DbMap.l.Printf("[ERROR] Failed to enable foreign key checks. Error %d \n", err)
 		return err
 	}
 

@@ -35,6 +35,11 @@ func main() {
 			AllowedHeaders: []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		},
 	))
+	//Get (and serve) the static file directory
+	static := http.FileServer(http.Dir("static"))
+
+	//Handle static files
+	router.Handle("/static/*", http.StripPrefix("/static/", static))
 
 	//Create a signal channel to detect interrupts and/or shutdowns
 	sig := make(chan os.Signal, 1)
@@ -69,6 +74,7 @@ func main() {
 	router.Put("/employees/{id}", employeeHandler.PutEmployee)
 	router.Post("/employees/", employeeHandler.PostEmployee)
 	router.Delete("/employees/{id}", employeeHandler.DeleteEmployee)
+	router.Delete("/employees/", employeeHandler.DeleteMultipleEmployees)
 	router.Get("/employees/", deptHandler.GetAllEmployees)
 
 	router.Post("/departments/", deptHandler.PostDepartment)
