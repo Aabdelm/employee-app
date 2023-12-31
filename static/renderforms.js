@@ -2,7 +2,7 @@
         employee fields:
         id, first, last, email, department, departmentID
 */
-import { employee } from "./script.js";
+import { Employee } from "./script.js";
 import { submitEmployee } from "./apis.js";
 //Renders employee based on method 
 export async function renderEmployee(employee, method){
@@ -54,7 +54,7 @@ export async function renderEmployee(employee, method){
     if(method == 'PUT'){
         button.id = 'employee';
         button.textContent = employee.department;
-        button.dataset['dept-Id'] = employee.departmentId;
+        button.dataset.deptId = employee.departmentId;
     }
    dropdown.appendChild(button);
 
@@ -113,12 +113,12 @@ export async function renderEmployee(employee, method){
             };
             //A (very lazy) swapping apporach
             button.textContent = deptDiv.textContent;
-            button.dataset['dept-Id'] = deptDiv.dataset['dept-Id'];
+            button.dataset['deptId'] = deptDiv.dataset['deptId'];
             //Change it to employee for the next swapping approach
             
 
             deptDiv.textContent = temp.department;
-            deptDiv.dataset['dept-Id'] = temp.Id;
+            deptDiv.dataset['deptId'] = temp.Id;
 
         }
 
@@ -141,11 +141,10 @@ export async function renderEmployee(employee, method){
 
    //Add POST request here
    submit.addEventListener(`click`, (e)=>{
-        
+        e.preventDefault();
         const newDeptId = Number(button.dataset['deptId']);
         const newEmail = email.value;
         const newFirst = firstName.value;
-        console.log(`First: ${newFirst}`);
         const newLast = lastName.value;
         const newDept = button.textContent;
         //The only thing that won't change
@@ -153,13 +152,15 @@ export async function renderEmployee(employee, method){
 
         const id = method == 'POST' ? 0 : employee.id;
 
-        const emp = employee(id,newFirst,newLast,newEmail,newDept,newDeptId);
+
+        const emp = Employee(id,newFirst,newLast,newEmail,newDept,newDeptId);
+        
 
         //We no longer need the form here
         submitEmployee(emp, method);
 
         settingsElement.remove();
-        e.preventDefault();
+        
    })
    buttons.appendChild(submit);
 

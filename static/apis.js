@@ -2,31 +2,40 @@
     Methods here are responsible for API methods
 */
 
-import { renderNewEmployee } from "./script.js";
+import { renderNewEmployee, renderExistingEmployee, removeDeletedEmployees } from "./script.js";
 
 //Master method for methods
 export async function submitEmployee(employee, Method){
-    console.log(employee);
     switch(Method){
         case 'PUT':
             const updatedEmp = await putEmployee(employee);
+            renderExistingEmployee(updatedEmp);
             break;
         case 'POST':
             const newEmp = await postEmployee(employee)
             //Hand it over to the table for new rendering
-            console.log(`Employee: ${newEmp}`);
             renderNewEmployee(newEmp)
             break;
     }
 }
 
-export async function deleteEmployee(){
-    
+export async function deleteEmployees(employees){
+    try{
+        const response = await fetch('http://localhost:80/employees/',{
+            method: 'DELETE',
+            headers:{
+                "Content-Type": "application/JSON",
+            },
+            body: JSON.stringify(employees),
+        });
+        removeDeletedEmployees();
+    }catch(e){
+        console.error(e);
+    }
 }
 
 async function postEmployee(employee){
     try{
-        //console.log(employee);
         const response = await fetch('http://localhost:80/employees/',{
             method: 'POST',
             headers:{
@@ -44,5 +53,17 @@ async function postEmployee(employee){
 }
 
 async function putEmployee(employee){
-
+    try{
+        const response = await fetch(`http://localhost:80/employees/${employee.id}`,{
+        method: 'PUT',
+        headers:{
+            "Content-type": "application/JSON",
+        },
+        body: JSON.stringify(employee),
+    });
+        const updatedEmp = await response.json();
+        return updatedEmp
+    }catch(e){
+        console.error(e);
+    }
 }
