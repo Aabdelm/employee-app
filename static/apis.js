@@ -2,7 +2,7 @@
     Methods here are responsible for API methods
 */
 
-import { renderNewEmployee, renderExistingEmployee, removeDeletedEmployees } from "./script.js";
+import { renderNewEmployee, renderExistingEmployee, removeDeletedEmployees, renderDepartmentAddition } from "./script.js";
 
 //Master method for methods
 export async function submitEmployee(employee, Method){
@@ -65,5 +65,20 @@ async function putEmployee(employee){
         return updatedEmp
     }catch(e){
         console.error(e);
+    }
+}
+
+export async function submitDepartment(dept){
+    try{
+        const res = await fetch(`http://localhost:80/departments/`,{
+            method: 'POST',
+            headers:{
+                "Content-type": "application/JSON",
+            },
+            body: JSON.stringify(dept),
+        })
+        renderDepartmentAddition();
+    }catch(e){
+        console.error(e)
     }
 }
