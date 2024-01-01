@@ -55,12 +55,24 @@
                 <div class="greet">Welcome, User</div>
                 <div class="numerics">
                     <div class="figure">
-                        <div class="number">94</div>
-                        <div class="info">Employees</div>
+                        <div class="number">{{len .Employees}}</div>
+                        <div class="info">
+                            {{if len .Employees | eq 1}}
+                                Employee
+                            {{else}}
+                                Employees
+                            {{end}}
+                        </div>
                     </div>
                     <div class="figure">
-                        <div class="number">180</div>
-                        <div class="info">Departments</div>
+                        <div class="number">{{len .Departments}}</div>
+                        <div class="info">
+                            {{if len .Departments | eq 1 }}
+                                Department
+                            {{else}}
+                                Departments
+                            {{end}}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -78,14 +90,14 @@
                     </thead>
 
                     <tbody>
-                        {{range .}}
+                        {{range $emp := .Employees}}
                             <tr>
                                 <td><input type="checkbox" name="checkbox" id="select"></td>
-                                <td id="employee-id">{{.Id}}</td>
-                                <td id="last-name">{{.LastName}}</td>
-                                <td id="first-name">{{.FirstName}}</td>
-                                <td type="email" id="email-data">{{.Email}}</td>
-                                <td data-dept-id={{.DepartmentId}}>{{.Department}}</td>
+                                <td id="employee-id">{{$emp.Id}}</td>
+                                <td id="last-name">{{$emp.LastName}}</td>
+                                <td id="first-name">{{$emp.FirstName}}</td>
+                                <td type="email" id="email-data">{{$emp.Email}}</td>
+                                <td data-dept-id={{.DepartmentId}}>{{$emp.Department}}</td>
                             </tr>
                         {{end}}
                         
