@@ -24,7 +24,7 @@ body, html{
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 .search-container{
-    width: 355px;
+    width: 445px;
     height: 40px;
     display: flex;
     
@@ -44,6 +44,7 @@ body, html{
     background: none;
     border: none;
     margin-left: -2.3rem;
+    // margin-right: 1.5rem;
     margin-top: 0.2rem;
     cursor: pointer;
    
@@ -127,8 +128,7 @@ body, html{
 
 .user-info{
     position: relative;
-    //left: 55%;
-    left: 40%;
+    left: 32.5%;
     .dropdown-box{
         display: flex;
         justify-content: center;
@@ -335,4 +335,11 @@ header{
 
 .selected{
     background-color: rgba(0,0,255,0.2);
+}
+
+#search-by{
+    border: none;
+    background: none;
+    margin-left: -6.5rem;
+    cursor: pointer;
 }
