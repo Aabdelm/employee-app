@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"sync"
 
 	employeedb "github.com/Aabdelm/employee-app/database"
 	"github.com/go-chi/chi/v5"
@@ -90,6 +91,7 @@ func (eh *EmployeeHandler) PostEmployee(rw http.ResponseWriter, r *http.Request)
 
 func (eh *EmployeeHandler) PutEmployee(rw http.ResponseWriter, r *http.Request) {
 	var err error
+	eh.L.Printf("[INFO] Function PutEmployee Called\n")
 	param := chi.URLParam(r, "id")
 
 	id, err := strconv.Atoi(param)
@@ -116,8 +118,6 @@ func (eh *EmployeeHandler) PutEmployee(rw http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	eh.L.Printf("[INFO] updated %d", id)
-
 	enc := json.NewEncoder(rw)
 
 	err = enc.Encode(employee)
@@ -128,6 +128,8 @@ func (eh *EmployeeHandler) PutEmployee(rw http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	rw.Header().Set("Content-type", "application/json")
+
 	eh.L.Printf("[INFO] Updated %d", id)
 
 }
@@ -135,8 +137,8 @@ func (eh *EmployeeHandler) PutEmployee(rw http.ResponseWriter, r *http.Request) 
 func (eh *EmployeeHandler) DeleteEmployee(rw http.ResponseWriter, r *http.Request) {
 	var err error
 
-	idS := chi.URLParam(r, "id")
-	id, err := strconv.Atoi(idS)
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
 
 	if err != nil {
 		eh.L.Printf("[ERROR] Failed to convert id into integer. Error %s", err)
@@ -153,4 +155,66 @@ func (eh *EmployeeHandler) DeleteEmployee(rw http.ResponseWriter, r *http.Reques
 
 	eh.L.Printf("[INFO] Deleted employee %d", id)
 
+}
+
+func (eh *EmployeeHandler) DeleteMultipleEmployees(rw http.ResponseWriter, r *http.Request) {
+	wg := &sync.WaitGroup{}
+
+	resume, errChan := make(chan bool), make(chan error)
+
+	eh.L.Printf("[INFO] Starting function DeleteMultipleEmployees\n")
+
+	emps := make([]*employeedb.Employee, 0)
+	dec := json.NewDecoder(r.Body)
+
+	if err := dec.Decode(&emps); err != nil {
+		eh.L.Printf("[ERROR] Failed to decode JSON. Error %d", err)
+		http.Error(rw, "Failed to decode JSON. This might be due to a bad input", http.StatusBadRequest)
+		return
+	}
+
+	go eh.runGoRoutines(emps, wg, resume, errChan)
+
+	select {
+	case <-errChan:
+		eh.L.Printf("[ERROR] Error detected in goroutine. Returning error %s", <-errChan)
+		http.Error(rw, "An error was detected while attempting to delete", http.StatusInternalServerError)
+		return
+	case <-resume:
+		eh.L.Printf("[INFO] All goroutines have finished\n")
+	}
+
+	eh.L.Printf("[INFO] Successfully deleted all employees\n")
+
+}
+
+func (eh *EmployeeHandler) runGoRoutines(emps []*employeedb.Employee, wg *sync.WaitGroup, resume chan bool, errChan chan error) {
+	eh.L.Printf("[INFO] Function runGoRoutines called")
+	//Create a buffered channel to limit the amount of goroutines running
+	sem := make(chan struct{}, 20)
+	for i, emp := range emps {
+		wg.Add(1)
+
+		go func(emp *employeedb.Employee, task int, wg *sync.WaitGroup) {
+			sem <- struct{}{} //Add one value to block until we're finished (to limit resources)
+			eh.L.Printf("[INFO] Starting task %d", task)
+			if err := eh.DbMap.DeleteEmployee(emp.Id); err != nil {
+				eh.L.Printf("[ERROR] Error detected at task %d, error %s", task, err)
+				eh.L.Printf("Sending error to channel\n")
+				errChan <- err
+
+			}
+			<-sem //Release once we're done
+			eh.L.Printf("[INFO] Task %d done", task)
+			wg.Done()
+		}(emp, i, wg)
+	}
+	eh.L.Printf("[INFO] Waiting for tasks to finish")
+	go func() {
+		//Wait for all tasks to finish
+		wg.Wait()
+		eh.L.Printf("[INFO] successfully deleted all tasks")
+		//We're all good now
+		resume <- true
+	}()
 }
