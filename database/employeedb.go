@@ -19,6 +19,12 @@ type EmployeeMapper interface {
 	DeleteEmployee(id int) error
 	AddNewEmployee(*Employee) error
 }
+type EmployeeSearcher interface {
+	GetEmployeesByFirstName(name string) ([]*Employee, error)
+	GetEmployeesByLastName(name string) ([]*Employee, error)
+	GetEmployeesByEmail(name string) (*Employee, error)
+}
+
 type DeptMapper interface {
 	GetEmployeesByDepartment(id int) ([]*Employee, error)
 	AddNewDepartment(dept *EmployeeDepartment) error
@@ -26,6 +32,9 @@ type DeptMapper interface {
 	UpdateDepartment(id int, department *EmployeeDepartment, newName string) error
 	GetAllDepartments() ([]*EmployeeDepartment, error)
 	GetAllEmployees() ([]*Employee, error)
+}
+type DeptSearcher interface {
+	GetEmployeesByDepartmentName(name string) ([]*Employee, error)
 }
 type DbMap struct {
 	l  *log.Logger    // for logging
