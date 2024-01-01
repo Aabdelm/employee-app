@@ -92,6 +92,9 @@ export function Employee(id, firstName, lastName, email, department, departmentI
 export async function renderNewEmployee(emp){
     const tbody = document.querySelector('tbody');
     const tr = document.createElement('tr');
+    const empBox = document.querySelectorAll('.figure')[0];
+    const empCounter = counter(empBox.querySelector('.number'));
+    const info = empBox.querySelector('.info');
 
     const buttonParent = document.createElement('td');
     const button = document.createElement('input');
@@ -132,6 +135,9 @@ export async function renderNewEmployee(emp){
 
     tbody.appendChild(tr);
 
+    empCounter.increaseCount()
+    renderPlurality(info,'Employee',empCounter);
+
     
     
 }
@@ -154,12 +160,48 @@ export async function renderExistingEmployee(emp){
     dept.dataset.deptId = emp.departmentId;
 }
 
+const counter = (ele) => {
+    let count = Number(ele.textContent);
+    const increaseCount = ()=>{
+        count++;
+        ele.textContent = count;
+        console.log(ele.textContent)
+    }
+    const decreaseCount = () => {
+        count--;
+        ele.textContent = count;
+        console.log(ele.textContent)
+    }
+    const getCount = () => {
+        return count;
+    }
+    return {getCount, increaseCount, decreaseCount}
+}
+
 export function removeDeletedEmployees(){
     const selectedAll = document.querySelectorAll('.selected');
+    const empBox = document.querySelectorAll('.figure')[0]
+    const figures = empBox.querySelector('.info');
+    const empCounter = counter(empBox.querySelector('.number'));
     selectedAll.forEach(ele => {
-       
         ele.remove();
+        empCounter.decreaseCount();
+        renderPlurality(figures, 'Employee', empCounter);
     })
+}
+
+export function renderDepartmentAddition(){
+    const deptBox = document.querySelectorAll('.figure')[1];
+    const deptCounter = counter(deptBox.querySelector('.number'));
+    const info = deptBox.querySelector('.info');
+
+    deptCounter.increaseCount();
+    renderPlurality(info, 'Department', deptCounter);
+}
+
+
+function renderPlurality(element, word,counter){
+    element.textContent = counter.getCount() == 1 ? word : (word + 's');
 }
 
 //Get employee info from an HTML element
