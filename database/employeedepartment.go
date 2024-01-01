@@ -68,11 +68,13 @@ func (DbMap *DbMap) AddNewDepartment(dept *EmployeeDepartment) error {
 
 	if err != nil {
 		DbMap.l.Printf("[ERROR] Failed to execute query for AddNewDepartment. Error:%s\n", err)
+		return err
 	}
 
 	lastId, err := row.LastInsertId()
 	if err != nil {
 		DbMap.l.Printf("[ERROR] Failed to retrieve last inserted id. Error:%s\n", err)
+		return err
 	}
 
 	DbMap.l.Printf("[INFO] Successfully added id %d\n", lastId)
