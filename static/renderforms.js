@@ -3,7 +3,7 @@
         id, first, last, email, department, departmentID
 */
 import { Employee } from "./script.js";
-import { submitEmployee } from "./apis.js";
+import { submitDepartment, submitEmployee } from "./apis.js";
 //Renders employee based on method 
 export async function renderEmployee(employee, method){
     const body = document.querySelector('body');
@@ -140,8 +140,10 @@ export async function renderEmployee(employee, method){
    
 
    //Add POST request here
-   submit.addEventListener(`click`, (e)=>{
+   submit.addEventListener(`click`, async (e)=>{
         e.preventDefault();
+        const emps = [...await pollAllEmployees()];
+
         const newDeptId = Number(button.dataset['deptId']);
         const newEmail = email.value;
         const newFirst = firstName.value;
@@ -154,7 +156,14 @@ export async function renderEmployee(employee, method){
 
 
         const emp = Employee(id,newFirst,newLast,newEmail,newDept,newDeptId);
-        
+
+        for(const existingEmp of emps){
+            if(existingEmp.email == emp.email){
+                email.style.borderBottom = 'solid red 2px';
+                return;
+            }
+        }
+        console.log('Continuing');
 
         //We no longer need the form here
         submitEmployee(emp, method);
@@ -179,7 +188,7 @@ export async function renderEmployee(employee, method){
 
 }
 
-export function addDepartment(){
+export async function addDepartment(){
     const body = document.querySelector('body');
     const settingsElement = document.createElement('div');
     settingsElement.classList.add('settings-container');
@@ -215,8 +224,23 @@ export function addDepartment(){
         settingsElement.remove();
     });
 
-    submit.addEventListener('click', ()=>{
-        //
+    
+
+    submit.addEventListener('click', async (e)=>{
+        e.preventDefault();
+
+        let depts = [...await pollDepartments()];
+        const newDept = {department: input.value};
+
+        depts = depts.filter(dept => dept.department == newDept.department);
+        //The department already exists, which will result in an error
+        if(depts.length){
+            input.style.borderBottom = 'solid red 2px';
+            return
+        }
+
+        submitDepartment(newDept);
+        settingsElement.remove();
     })
 
     buttons.appendChild(submit);
@@ -268,3 +292,12 @@ async function pollDepartments(){
     
 }
 
+async function pollAllEmployees(){
+    try{
+        const initData = await fetch('http://localhost:80/employees/')
+        const resp = await initData.json();
+        return resp;
+    }catch(e){
+        console.error(e);
+    }
+}
