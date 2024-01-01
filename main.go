@@ -16,6 +16,19 @@ import (
 	"github.com/go-chi/cors"
 )
 
+// A collection for both employees and departments (for initial rendering)
+type Collections struct {
+	Employees   []*employeedb.Employee
+	Departments []*employeedb.EmployeeDepartment
+}
+
+func newCollections(emps []*employeedb.Employee, depts []*employeedb.EmployeeDepartment) *Collections {
+	return &Collections{
+		Employees:   emps,
+		Departments: depts,
+	}
+}
+
 func main() {
 	/*
 		For the time being, os.stdout will be used
@@ -64,7 +77,13 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if err := tmpl.Execute(rw, employees); err != nil {
+		depts, err := db.GetAllDepartments()
+		if err != nil {
+			log.Fatal(err)
+		}
+		collection := newCollections(employees, depts)
+
+		if err := tmpl.Execute(rw, collection); err != nil {
 			log.Fatal(err)
 		}
 
