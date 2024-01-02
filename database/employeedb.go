@@ -22,7 +22,7 @@ type EmployeeMapper interface {
 type EmployeeSearcher interface {
 	GetEmployeesByFirstName(name string) ([]*Employee, error)
 	GetEmployeesByLastName(name string) ([]*Employee, error)
-	GetEmployeesByEmail(name string) (*Employee, error)
+	GetEmployeesByEmail(name string) ([]*Employee, error)
 }
 
 type DeptMapper interface {
