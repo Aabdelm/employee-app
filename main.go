@@ -68,7 +68,7 @@ func main() {
 
 	defer db.Db.Close()
 
-	employeeHandler := handlers.NewEmployeeHandler(l, db)
+	employeeHandler := handlers.NewEmployeeHandler(l, db, db)
 	deptHandler := handlers.NewDepartmentHandler(l, db)
 
 	router.Get("/", func(rw http.ResponseWriter, r *http.Request) {
@@ -94,6 +94,11 @@ func main() {
 	router.Post("/employees/", employeeHandler.PostEmployee)
 	router.Delete("/employees/{id}", employeeHandler.DeleteEmployee)
 	router.Delete("/employees/", employeeHandler.DeleteMultipleEmployees)
+
+	//Have to route searcher methods to a "master" search method
+	//There doesn't seem to be a better way
+	router.Get("/employees", employeeHandler.GetEmployeesByQuery)
+
 	router.Get("/employees/", deptHandler.GetAllEmployees)
 
 	router.Post("/departments/", deptHandler.PostDepartment)
