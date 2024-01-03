@@ -1,5 +1,5 @@
 import  {renderEmployee, addDepartment} from "/static/renderforms.js"
-import { deleteEmployees } from "./apis.js";
+import { deleteEmployees, query} from "./apis.js";
 
 //Responsible for dealing with the DOM
 function main(){
@@ -45,6 +45,20 @@ function main(){
     });
     departmentBox.addEventListener(`click`, addDepartment);
 
+    const search = document.querySelector('[type=search]');
+    search.addEventListener(`keydown`, (e)=>{
+        if(e.key == 'Enter' || e.key == 'Return'){
+            e.preventDefault();
+            const option = [...document.querySelectorAll('option')]
+            .filter(element => element.selected)[0];
+
+            const val = option.value;
+            const identifer = search.value;
+
+            query(identifer, val)
+        }
+    })
+
 }
 
 
@@ -89,7 +103,8 @@ export function Employee(id, firstName, lastName, email, department, departmentI
 }
 
 
-export async function renderNewEmployee(emp){
+export async function renderNewEmployee(emp, method){
+    //debugger;
     const tbody = document.querySelector('tbody');
     const tr = document.createElement('tr');
     const empBox = document.querySelectorAll('.figure')[0];
@@ -135,11 +150,37 @@ export async function renderNewEmployee(emp){
 
     tbody.appendChild(tr);
 
-    empCounter.increaseCount()
+    if(method == "POST") empCounter.increaseCount()
     renderPlurality(info,'Employee',empCounter);
 
     
     
+}
+
+export function clearAndReRender(emps){
+    const rows = [...document.querySelectorAll('tr')]
+    .filter((_, index) => index > 0)
+    .forEach(element => element.remove())
+
+    emps.forEach(emp => {
+        renderNewEmployee(emp);
+    })
+     
+}
+
+export function toastify(err){
+    const toast = document.querySelector('.toast');
+    const error = toast.querySelector('.error');
+    error.textContent = err;
+
+    toast.style.transition = "0.3s ease";
+    setTimeout(()=>{
+        toast.style.opacity = '100%'
+    }, 500);
+    setTimeout(()=>{
+        toast.style.opacity = '0';
+    },3500);
+        
 }
 
 export async function renderExistingEmployee(emp){
@@ -165,12 +206,10 @@ const counter = (ele) => {
     const increaseCount = ()=>{
         count++;
         ele.textContent = count;
-        console.log(ele.textContent)
     }
     const decreaseCount = () => {
         count--;
         ele.textContent = count;
-        console.log(ele.textContent)
     }
     const getCount = () => {
         return count;
@@ -179,15 +218,18 @@ const counter = (ele) => {
 }
 
 export function removeDeletedEmployees(){
-    const selectedAll = document.querySelectorAll('.selected');
+    const selected = document.querySelectorAll('.selected');
+
     const empBox = document.querySelectorAll('.figure')[0]
     const figures = empBox.querySelector('.info');
     const empCounter = counter(empBox.querySelector('.number'));
-    selectedAll.forEach(ele => {
+    selected.forEach(ele => {
         ele.remove();
         empCounter.decreaseCount();
         renderPlurality(figures, 'Employee', empCounter);
     })
+
+    document.querySelector('#select-all').checked = false;
 }
 
 export function renderDepartmentAddition(){
