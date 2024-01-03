@@ -8,25 +8,34 @@ import (
 	"sync"
 
 	employeedb "github.com/Aabdelm/employee-app/database"
+	"github.com/Aabdelm/employee-app/regex"
 	"github.com/go-chi/chi/v5"
 )
 
 type EmployeeHandler struct {
-	L     *log.Logger
-	DbMap employeedb.EmployeeMapper
+	L        *log.Logger
+	DbMap    employeedb.EmployeeMapper
+	Searcher employeedb.EmployeeSearcher
 }
 
-func NewEmployeeHandler(l *log.Logger, DbMap employeedb.EmployeeMapper) *EmployeeHandler {
+func NewEmployeeHandler(l *log.Logger, DbMap employeedb.EmployeeMapper, searcher employeedb.EmployeeSearcher) *EmployeeHandler {
 
 	return &EmployeeHandler{
-		L:     l,
-		DbMap: DbMap,
+		L:        l,
+		DbMap:    DbMap,
+		Searcher: searcher,
 	}
 }
 
 func (eh *EmployeeHandler) GetEmployee(rw http.ResponseWriter, r *http.Request) {
 	var err error
 	idString := chi.URLParam(r, "id")
+
+	if !regex.IsDigit(idString, eh.L) {
+		eh.L.Printf("[INFO] parameter is not integer")
+		http.Error(rw, "ID is not a number", http.StatusBadRequest)
+		return
+	}
 
 	id, err := strconv.Atoi(idString)
 	if err != nil {
@@ -57,6 +66,63 @@ func (eh *EmployeeHandler) GetEmployee(rw http.ResponseWriter, r *http.Request) 
 		eh.L.Printf("[ERROR] Failed to get JSON for employee %d. Error: %s", id, err)
 		return
 	}
+
+}
+
+func (eh *EmployeeHandler) GetEmployeesByQuery(rw http.ResponseWriter, r *http.Request) {
+	eh.L.Printf("[INFO] Starting main employee function\n")
+
+	url := r.URL.Query()
+	eh.L.Printf("[INFO] Got parameters %q", url)
+
+	queryLength := len(url)
+	if queryLength != 1 {
+		eh.L.Printf("[ERROR] Query received is not 1. Length received %d", queryLength)
+		http.Error(rw, "Query must be singular", http.StatusBadRequest)
+		return
+	}
+
+	var queryFunc func(string) ([]*employeedb.Employee, error)
+	var query string
+	switch {
+	case url.Has("email"):
+		query = url.Get("email")
+		eh.L.Printf("[INFO] Got email %s\n", query)
+
+		queryFunc = eh.Searcher.GetEmployeesByEmail
+	case url.Has("firstname"):
+		query = url.Get("firstname")
+		eh.L.Printf("[INFO] Got first name %s\n", query)
+		queryFunc = eh.Searcher.GetEmployeesByFirstName
+	case url.Has("lastname"):
+		query = url.Get("lastname")
+		eh.L.Printf("[INFO] Got last name %s\n", query)
+		queryFunc = eh.Searcher.GetEmployeesByLastName
+	default:
+		http.Error(rw, "Query not executed", http.StatusBadRequest)
+		return
+	}
+
+	emps, err := queryFunc(query)
+	if err != nil {
+		eh.L.Printf("[ERROR] Failed to get employees. Error %s", err)
+		http.Error(rw, "Failed to get employees. This is most likely due to a bad query", http.StatusBadRequest)
+		return
+	}
+
+	enc := json.NewEncoder(rw)
+
+	if emps == nil {
+		//In case we get a null response
+		emps = make([]*employeedb.Employee, 0)
+	}
+
+	if err := enc.Encode(emps); err != nil {
+		eh.L.Printf("[ERROR] Failed to encode JSON. Error %s", err)
+		http.Error(rw, "Failed to encode JSON", http.StatusInternalServerError)
+		return
+	}
+	eh.L.Printf("[INFO] successfully encoded info")
 
 }
 
@@ -93,6 +159,12 @@ func (eh *EmployeeHandler) PutEmployee(rw http.ResponseWriter, r *http.Request) 
 	var err error
 	eh.L.Printf("[INFO] Function PutEmployee Called\n")
 	param := chi.URLParam(r, "id")
+
+	if !regex.IsDigit(param, eh.L) {
+		eh.L.Printf("[INFO] parameter is not integer")
+		http.Error(rw, "ID is not a number", http.StatusBadRequest)
+		return
+	}
 
 	id, err := strconv.Atoi(param)
 
@@ -138,6 +210,12 @@ func (eh *EmployeeHandler) DeleteEmployee(rw http.ResponseWriter, r *http.Reques
 	var err error
 
 	idStr := chi.URLParam(r, "id")
+
+	if !regex.IsDigit(idStr, eh.L) {
+		eh.L.Printf("[INFO] parameter is not integer")
+		http.Error(rw, "ID is not a number", http.StatusBadRequest)
+		return
+	}
 	id, err := strconv.Atoi(idStr)
 
 	if err != nil {
