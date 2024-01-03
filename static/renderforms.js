@@ -3,7 +3,7 @@
         id, first, last, email, department, departmentID
 */
 import { Employee } from "./script.js";
-import { submitDepartment, submitEmployee } from "./apis.js";
+import { awaitAndToastify, submitDepartment, submitEmployee, awaitAndToastify } from "./apis.js";
 //Renders employee based on method 
 export async function renderEmployee(employee, method){
     const body = document.querySelector('body');
@@ -157,13 +157,14 @@ export async function renderEmployee(employee, method){
 
         const emp = Employee(id,newFirst,newLast,newEmail,newDept,newDeptId);
 
-        for(const existingEmp of emps){
-            if(existingEmp.email == emp.email){
-                email.style.borderBottom = 'solid red 2px';
-                return;
+        if(method == 'POST'){
+            for(const existingEmp of emps){
+                if(existingEmp.email == emp.email){
+                    email.style.borderBottom = 'solid red 2px';
+                    return;
+                }
             }
         }
-        console.log('Continuing');
 
         //We no longer need the form here
         submitEmployee(emp, method);
@@ -284,8 +285,12 @@ function renderButtons(){
 async function pollDepartments(){
     try{
         const initData = await fetch('http://localhost:80/departments/')
-        const resp = await initData.json();
-        return resp;
+        if (!initData.ok){
+            awaitAndToastify(initData);
+        }else{
+            const resp = await initData.json();
+            return resp;
+        }
     }catch(e){
         console.error(e);
     }
@@ -295,8 +300,14 @@ async function pollDepartments(){
 async function pollAllEmployees(){
     try{
         const initData = await fetch('http://localhost:80/employees/')
-        const resp = await initData.json();
-        return resp;
+        if(!initData.ok){
+            awaitAndToastify(initData);
+        }
+        else{
+            const resp = await initData.json();
+            return resp;
+        }
+        
     }catch(e){
         console.error(e);
     }
