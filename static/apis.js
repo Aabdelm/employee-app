@@ -126,25 +126,6 @@ const isDigit = (digit) =>{
     return regEx.test(digit);
 }
 
-export async function getEmployeeById(stringId){
-    //Strictly filter for digits
-    const reg = new RegExp("^[0-9]+$");
-    if(!reg.test(stringId)) return;
-
-    try{
-        const resp = await fetch(`http://localhost:80/employees/${stringId}`)
-        if(!resp.ok){
-            awaitAndToastify(resp);
-        }
-        else{
-            const id = await resp.json();
-            clearAndReRender(id);
-        }
-    }catch(e){
-        console.error(e);
-    }
-}
-
 export async function awaitAndToastify(res){
     const err = await res.text();
     toastify(err);
