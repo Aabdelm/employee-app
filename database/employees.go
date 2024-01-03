@@ -1,6 +1,7 @@
 package employeedb
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -68,11 +69,6 @@ func (DbMap *DbMap) UpdateEmployee(employee *Employee) error {
 		return err
 	}
 
-	if err = DbMap.enableForeignKeyChecks(); err != nil {
-		DbMap.l.Printf("[ERROR] Failed to enable foreign key checks. Error %d \n", err)
-		return err
-	}
-
 	DbMap.l.Printf("[INFO] Successfully updated employee %d\n", employee.Id)
 
 	return nil
@@ -131,4 +127,73 @@ func (DbMap *DbMap) AddNewEmployee(employee *Employee) error {
 
 	DbMap.l.Printf("[INFO] Added employee to database \n")
 	return nil
+}
+
+func (DbMap *DbMap) getEmployeesByQuery(query string, name string) ([]*Employee, error) {
+	var err error
+	DbMap.l.Printf("[INFO] Starting function getEmployeesByQuery \n")
+	var emps []*Employee
+
+	initQuery := fmt.Sprintf(
+		`SELECT id, first_name,last_name,email,department,employee.department_id
+	FROM employee_department
+	INNER JOIN employee ON employee_department.department_id = employee.department_id
+	WHERE %s LIKE CONCAT('%%', ?, '%%')`, query)
+
+	stmt, err := DbMap.Db.Prepare(initQuery)
+
+	if err != nil {
+		DbMap.l.Printf("[ERROR] Failed to prepare statement in function getEmployeesByQuery. Error %s", err)
+		stmt.Close()
+		return nil, err
+	}
+
+	rows, err := stmt.Query(name)
+
+	if err != nil {
+		DbMap.l.Printf("[ERROR] Failed to Query statement in function getEmployeesByQuery. Error %s", err)
+		return nil, err
+	}
+
+	for rows.Next() {
+		emp := NewEmployee()
+		if err := rows.Scan(&emp.Id, &emp.FirstName,
+			&emp.LastName, &emp.Email, &emp.Department, &emp.DepartmentId); err != nil {
+			DbMap.l.Printf("[ERROR] Failed to Scan row in function getEmployeesByQuery. Error %s", err)
+			return make([]*Employee, 0), err
+		}
+		emps = append(emps, emp)
+	}
+	return emps, nil
+
+}
+
+func (DbMap *DbMap) GetEmployeesByFirstName(name string) ([]*Employee, error) {
+	DbMap.l.Printf("[INFO] Starting function GetEmployeesByFirstName")
+	emps, err := DbMap.getEmployeesByQuery("first_name", name)
+	if err != nil {
+		DbMap.l.Printf("[ERROR] Failed to get employees. Error %s", err)
+		return nil, err
+	}
+	return emps, err
+}
+
+func (DbMap *DbMap) GetEmployeesByLastName(name string) ([]*Employee, error) {
+	DbMap.l.Printf("[INFO] Starting function GetEmployeesByLastName")
+	emps, err := DbMap.getEmployeesByQuery("last_name", name)
+	if err != nil {
+		DbMap.l.Printf("[ERROR] Failed to get employees. Error %s", err)
+		return nil, err
+	}
+	return emps, err
+}
+
+func (DbMap *DbMap) GetEmployeesByEmail(name string) ([]*Employee, error) {
+	DbMap.l.Printf("[INFO] Starting function GetEmployeesByEmail")
+	emps, err := DbMap.getEmployeesByQuery("email", name)
+	if err != nil {
+		DbMap.l.Printf("[ERROR] Failed to get employees. Error %s", err)
+		return nil, err
+	}
+	return emps, err
 }
