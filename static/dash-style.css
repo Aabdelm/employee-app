@@ -26,7 +26,7 @@ body, html {
 }
 
 .search-container {
-  width: 355px;
+  width: 445px;
   height: 40px;
   display: flex;
 }
@@ -119,11 +119,10 @@ body, html {
 
 .user-info {
   position: relative;
-  left: 40%;
+  left: 32.5%;
 }
 .user-info .dropdown-box {
   display: flex;
-  justify-content: center;
   position: absolute;
   top: 0;
   height: 50px;
@@ -304,4 +303,38 @@ header {
 
 .selected {
   background-color: rgba(0, 0, 255, 0.2);
+}
+
+#search-by {
+  border: none;
+  background: none;
+  margin-left: -6.5rem;
+  cursor: pointer;
+}
+
+.toast {
+  opacity: 0;
+  position: absolute;
+  width: 300px;
+  height: 85px;
+  border: none;
+  background-color: crimson;
+  overflow-x: auto;
+  font-family: "Roboto", helvetica, sans-serif;
+  z-index: 40;
+  right: 5px;
+  bottom: 10px;
+  border-radius: 5px;
+  padding: 5px 10px;
+}
+
+.toast div {
+  color: white;
+}
+
+.toast .head {
+  font-size: 1.75rem;
+  font-weight: 500;
+  margin-bottom: 3px;
+  overflow-x: hidden;
 }
