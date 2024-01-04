@@ -143,7 +143,7 @@ func TestGetNullEmployee(t *testing.T) {
 	result := rr.Result()
 
 	if result.StatusCode != http.StatusBadRequest {
-		t.Fatalf("Expected %d, got %d", http.StatusNotFound, result.StatusCode)
+		t.Fatalf("Expected %d, got %d", http.StatusBadRequest, result.StatusCode)
 	}
 }
 
