@@ -40,7 +40,7 @@ func (eh *EmployeeHandler) GetEmployee(rw http.ResponseWriter, r *http.Request) 
 	id, err := strconv.Atoi(idString)
 	if err != nil {
 		eh.L.Printf("[ERROR] Failed to get parameter. Error: %s", err)
-		rw.WriteHeader(http.StatusInternalServerError)
+		http.Error(rw, "Failed to get parameter", http.StatusInternalServerError)
 		return
 	}
 
@@ -49,12 +49,12 @@ func (eh *EmployeeHandler) GetEmployee(rw http.ResponseWriter, r *http.Request) 
 	employee, err := eh.DbMap.GetEmployeeById(id)
 	if err != nil {
 		eh.L.Printf("[ERROR] Failed to Get employee %d. Error: %s", id, err)
-		rw.WriteHeader(http.StatusNotFound)
+		http.Error(rw, "An error has occured", http.StatusInternalServerError)
 		return
 	}
 	if employee == nil {
 		eh.L.Printf("[ERROR] Failed to Get employee %d. Employee is null", id)
-		rw.WriteHeader(http.StatusBadRequest)
+		http.Error(rw, "Failed to get employee", http.StatusNotFound)
 		return
 	}
 
@@ -64,6 +64,7 @@ func (eh *EmployeeHandler) GetEmployee(rw http.ResponseWriter, r *http.Request) 
 	err = enc.Encode(employee)
 	if err != nil {
 		eh.L.Printf("[ERROR] Failed to get JSON for employee %d. Error: %s", id, err)
+		http.Error(rw, "Failed to encode JSON", http.StatusInternalServerError)
 		return
 	}
 
