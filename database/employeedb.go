@@ -15,9 +15,7 @@ type EmployeeMapper interface {
 	AddNewEmployee(*Employee) error
 }
 type EmployeeSearcher interface {
-	GetEmployeesByFirstName(name string) ([]*Employee, error)
-	GetEmployeesByLastName(name string) ([]*Employee, error)
-	GetEmployeesByEmail(email string) ([]*Employee, error)
+	Search(identifier string, category string) ([]*Employee, error)
 }
 
 type DeptMapper interface {
