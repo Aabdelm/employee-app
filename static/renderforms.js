@@ -3,7 +3,7 @@
         id, first, last, email, department, departmentID
 */
 import { Employee } from "./script.js";
-import { awaitAndToastify, submitDepartment, submitEmployee, awaitAndToastify } from "./apis.js";
+import { awaitAndToastify, submitDepartment, submitEmployee } from "./apis.js";
 //Renders employee based on method 
 export async function renderEmployee(employee, method){
     const body = document.querySelector('body');
