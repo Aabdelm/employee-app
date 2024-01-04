@@ -97,6 +97,10 @@ func (eh *EmployeeHandler) GetEmployeesByQuery(rw http.ResponseWriter, r *http.R
 		query = url.Get("lastname")
 		eh.L.Printf("[INFO] Got last name %s\n", query)
 		dbColumn = "last_name"
+	case url.Has("department"):
+		query = url.Get("department")
+		eh.L.Printf("[INFO] Got Department %s\n", query)
+		dbColumn = "department"
 	default:
 		http.Error(rw, "Query not executed", http.StatusBadRequest)
 		return
