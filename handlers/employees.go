@@ -15,10 +15,10 @@ import (
 type EmployeeHandler struct {
 	L        *log.Logger
 	DbMap    employeedb.EmployeeMapper
-	Searcher employeedb.EmployeeSearcher
+	Searcher employeedb.Searcher
 }
 
-func NewEmployeeHandler(l *log.Logger, DbMap employeedb.EmployeeMapper, searcher employeedb.EmployeeSearcher) *EmployeeHandler {
+func NewEmployeeHandler(l *log.Logger, DbMap employeedb.EmployeeMapper, searcher employeedb.Searcher) *EmployeeHandler {
 
 	return &EmployeeHandler{
 		L:        l,
@@ -82,28 +82,27 @@ func (eh *EmployeeHandler) GetEmployeesByQuery(rw http.ResponseWriter, r *http.R
 		return
 	}
 
-	var queryFunc func(string) ([]*employeedb.Employee, error)
 	var query string
+	var dbColumn string
 	switch {
 	case url.Has("email"):
 		query = url.Get("email")
+		dbColumn = "email"
 		eh.L.Printf("[INFO] Got email %s\n", query)
-
-		queryFunc = eh.Searcher.GetEmployeesByEmail
 	case url.Has("firstname"):
 		query = url.Get("firstname")
 		eh.L.Printf("[INFO] Got first name %s\n", query)
-		queryFunc = eh.Searcher.GetEmployeesByFirstName
+		dbColumn = "first_name"
 	case url.Has("lastname"):
 		query = url.Get("lastname")
 		eh.L.Printf("[INFO] Got last name %s\n", query)
-		queryFunc = eh.Searcher.GetEmployeesByLastName
+		dbColumn = "last_name"
 	default:
 		http.Error(rw, "Query not executed", http.StatusBadRequest)
 		return
 	}
 
-	emps, err := queryFunc(query)
+	emps, err := eh.Searcher.Search(query, dbColumn)
 	if err != nil {
 		eh.L.Printf("[ERROR] Failed to get employees. Error %s", err)
 		http.Error(rw, "Failed to get employees. This is most likely due to a bad query", http.StatusBadRequest)
