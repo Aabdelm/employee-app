@@ -14,7 +14,7 @@ type EmployeeMapper interface {
 	DeleteEmployee(id int) error
 	AddNewEmployee(*Employee) error
 }
-type EmployeeSearcher interface {
+type Searcher interface {
 	Search(identifier string, category string) ([]*Employee, error)
 }
 
@@ -25,9 +25,6 @@ type DeptMapper interface {
 	UpdateDepartment(id int, department *EmployeeDepartment, newName string) error
 	GetAllDepartments() ([]*EmployeeDepartment, error)
 	GetAllEmployees() ([]*Employee, error)
-}
-type DeptSearcher interface {
-	GetEmployeesByDepartmentName(name string) ([]*Employee, error)
 }
 type DbMap struct {
 	l  *log.Logger    // for logging
