@@ -40,7 +40,7 @@ func (eh *EmployeeHandler) GetEmployee(rw http.ResponseWriter, r *http.Request) 
 	id, err := strconv.Atoi(idString)
 	if err != nil {
 		eh.L.Printf("[ERROR] Failed to get parameter. Error: %s", err)
-		http.Error(rw, "Failed to get parameter", http.StatusInternalServerError)
+		http.Error(rw, "Failed to get parameter", http.StatusBadRequest)
 		return
 	}
 
@@ -54,7 +54,7 @@ func (eh *EmployeeHandler) GetEmployee(rw http.ResponseWriter, r *http.Request) 
 	}
 	if employee == nil {
 		eh.L.Printf("[ERROR] Failed to Get employee %d. Employee is null", id)
-		http.Error(rw, "Failed to get employee", http.StatusNotFound)
+		http.Error(rw, "Failed to get employee", http.StatusBadRequest)
 		return
 	}
 
