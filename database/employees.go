@@ -168,32 +168,14 @@ func (DbMap *DbMap) getEmployeesByQuery(query string, name string) ([]*Employee,
 
 }
 
-func (DbMap *DbMap) GetEmployeesByFirstName(name string) ([]*Employee, error) {
-	DbMap.l.Printf("[INFO] Starting function GetEmployeesByFirstName")
-	emps, err := DbMap.getEmployeesByQuery("first_name", name)
+// Search calls getEmployeesByQuery to return the employees in the database
+// an identifier consists of a field that could identify an employee (first name, last name, email)
+func (DbMap *DbMap) Search(identifier string, dbColumn string) ([]*Employee, error) {
+	DbMap.l.Printf("[INFO] function Search started")
+	emps, err := DbMap.getEmployeesByQuery(dbColumn, identifier)
 	if err != nil {
-		DbMap.l.Printf("[ERROR] Failed to get employees. Error %s", err)
+		DbMap.l.Printf("[ERROR] Failed to get employee. Error %s", err)
 		return nil, err
 	}
-	return emps, err
-}
-
-func (DbMap *DbMap) GetEmployeesByLastName(name string) ([]*Employee, error) {
-	DbMap.l.Printf("[INFO] Starting function GetEmployeesByLastName")
-	emps, err := DbMap.getEmployeesByQuery("last_name", name)
-	if err != nil {
-		DbMap.l.Printf("[ERROR] Failed to get employees. Error %s", err)
-		return nil, err
-	}
-	return emps, err
-}
-
-func (DbMap *DbMap) GetEmployeesByEmail(name string) ([]*Employee, error) {
-	DbMap.l.Printf("[INFO] Starting function GetEmployeesByEmail")
-	emps, err := DbMap.getEmployeesByQuery("email", name)
-	if err != nil {
-		DbMap.l.Printf("[ERROR] Failed to get employees. Error %s", err)
-		return nil, err
-	}
-	return emps, err
+	return emps, nil
 }
