@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	employeedb "github.com/Aabdelm/employee-app/database"
+	"github.com/Aabdelm/employee-app/regex"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -52,6 +53,10 @@ func (dh *DepartmentHandler) PutDepartment(rw http.ResponseWriter, r *http.Reque
 	var err error
 
 	idStr := chi.URLParam(r, "id")
+	if !regex.IsDigit(idStr, dh.L) {
+		http.Error(rw, "Error: Parameter is not an integer", http.StatusBadRequest)
+		return
+	}
 
 	id, err := strconv.Atoi(idStr)
 
@@ -87,6 +92,11 @@ func (dh *DepartmentHandler) DeleteDepartment(rw http.ResponseWriter, r *http.Re
 	var err error
 
 	idS := chi.URLParam(r, "id")
+	if !regex.IsDigit(idS, dh.L) {
+		http.Error(rw, "Error: Parameter is not an integer", http.StatusBadRequest)
+		return
+	}
+
 	id, err := strconv.Atoi(idS)
 
 	if err != nil {
@@ -109,6 +119,11 @@ func (dh *DepartmentHandler) DeleteDepartment(rw http.ResponseWriter, r *http.Re
 func (dh *DepartmentHandler) GetDepartment(rw http.ResponseWriter, r *http.Request) {
 	var err error
 	idStr := chi.URLParam(r, "id")
+
+	if !regex.IsDigit(idStr, dh.L) {
+		http.Error(rw, "Error: Parameter is not an integer", http.StatusBadRequest)
+		return
+	}
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
