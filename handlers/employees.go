@@ -49,7 +49,7 @@ func (eh *EmployeeHandler) GetEmployee(rw http.ResponseWriter, r *http.Request) 
 	employee, err := eh.DbMap.GetEmployeeById(id)
 	if err != nil {
 		eh.L.Printf("[ERROR] Failed to Get employee %d. Error: %s", id, err)
-		http.Error(rw, "An error has occured", http.StatusInternalServerError)
+		http.Error(rw, "An error has occured", http.StatusNotFound)
 		return
 	}
 	if employee == nil {
