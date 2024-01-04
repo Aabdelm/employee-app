@@ -11,7 +11,7 @@ it returns a nil error if no error was found
 func (DbMap *DbMap) GetEmployeesByDepartment(deptId int) (employees []*Employee, err error) {
 	//Query rows
 	statement, err := DbMap.Db.Prepare(`
-	SELECT id, first_name, last_name, email, employee_department.department_id
+	SELECT id, first_name, last_name, email, department, employee_department.department_id
 	FROM employee_department
 	INNER JOIN employee ON id = employee.department_id
 	WHERE employee_department.department_id = ?`)
@@ -38,7 +38,8 @@ func (DbMap *DbMap) GetEmployeesByDepartment(deptId int) (employees []*Employee,
 	//iterate and append
 	for rows.Next() {
 		employee := NewEmployee()
-		if err := rows.Scan(&employee.Id, &employee.FirstName, &employee.LastName, &employee.Email, &employee.DepartmentId); err != nil {
+		if err := rows.Scan(&employee.Id, &employee.FirstName, &employee.LastName, &employee.Email,
+			&employee.Department, &employee.DepartmentId); err != nil {
 			return nil, err
 		}
 		employees = append(employees, employee)
