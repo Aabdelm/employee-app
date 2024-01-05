@@ -60,7 +60,7 @@ func main() {
 
 	//Create and setup the database
 	db := employeedb.NewDbMap(l)
-	if err := employeedb.SetupDb(db); err != nil {
+	if err := employeedb.SetupDb(db, "employee_management"); err != nil {
 		l.Printf("ERROR: FAILED TO CONNECT TO DATABASE. Error %s", err)
 		time.Sleep(5 * time.Second)
 		return
@@ -68,8 +68,16 @@ func main() {
 
 	defer db.Db.Close()
 
+	secdb := employeedb.NewDbMap(l)
+	if err := employeedb.SetupDb(secdb, "security"); err != nil {
+		l.Printf("[ERROR] Failed TO CONNECT TO SECURITY DATABASE. ERROR %s", err)
+		time.Sleep(5 * time.Second)
+		return
+	}
+
 	employeeHandler := handlers.NewEmployeeHandler(l, db, db)
 	deptHandler := handlers.NewDepartmentHandler(l, db)
+	securityHandler := handlers.NewSecurityHandler(l, secdb)
 
 	router.Get("/", func(rw http.ResponseWriter, r *http.Request) {
 		tmpl := template.Must(template.ParseFiles("./templates/employees.html"))
@@ -106,6 +114,8 @@ func main() {
 	router.Put("/departments/{id}", deptHandler.PutDepartment)
 	router.Delete("/departments/{id}", deptHandler.DeleteDepartment)
 	router.Get("/departments/", deptHandler.GetAllDepartments)
+
+	router.Post("/login", securityHandler.PostInfo)
 
 	s := &http.Server{
 		Addr:    "localhost:80",
