@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/Aabdelm/employee-app/security"
 	"github.com/go-sql-driver/mysql"
 )
 
@@ -30,6 +31,15 @@ type DbMap struct {
 	l  *log.Logger    // for logging
 	M  map[string]int // for storing key-pair vals of departments
 	Db *sql.DB        //the database
+}
+
+type Sec interface {
+	FetchInfo(username string) (*security.Info, error)
+}
+
+type User struct {
+	UserName string `json:"username"`
+	UserPass string `json:"userpass"`
 }
 
 type Employee struct {
@@ -58,16 +68,20 @@ func NewEmployeeDepartment() *EmployeeDepartment {
 	return &EmployeeDepartment{}
 }
 
+func NewUser() *User {
+	return &User{}
+}
+
 /*
 SetupDb deals with setting up the database. It returns a nil value if no errors were found
 */
-func SetupDb(DbMap *DbMap) error {
+func SetupDb(DbMap *DbMap, DbName string) error {
 	cfg := &mysql.Config{
 		User:   os.Getenv("DBUSERNAME"),
 		Passwd: os.Getenv("DBPASSWORD"),
 		Net:    "tcp",
 		Addr:   "127.0.0.1:3306",
-		DBName: "employee_management",
+		DBName: DbName,
 	}
 
 	var err error
