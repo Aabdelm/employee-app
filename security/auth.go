@@ -47,12 +47,12 @@ func generateRandomBytes(l *log.Logger) ([]byte, error) {
 	return bytes, nil
 }
 
-func generateArgon2(password string, l *log.Logger) (string, string, error) {
+func generateArgon2(password string, l *log.Logger) (*Info, error) {
 	l.Printf("[INFO] generateArgon2 called")
 
 	salt, err := generateRandomBytes(l)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 	l.Printf("[INFO] generating and encoding argon2")
 	hashedPass := argon2.IDKey([]byte(password), salt, time, memory, threads, keyLen)
@@ -62,9 +62,15 @@ func generateArgon2(password string, l *log.Logger) (string, string, error) {
 	a2S := fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%s", argon2.Version, time, threads, b64Pass)
 	l.Printf("[INFO] argon2 generated")
 
-	return a2S, b64Salt, nil
+	info := NewInfoStruct()
+
+	info.Pw = a2S
+	info.Salt = b64Salt
+
+	return info, nil
 
 }
+
 func VerifyPass(original string, hashed *Info, l *log.Logger) error {
 	l.Printf("[INFO] VerifyPass called")
 
